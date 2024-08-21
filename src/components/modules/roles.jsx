@@ -95,7 +95,7 @@ class Roles extends Component {
     );
 
     if (!hasSelectedPermission) {
-      alert("No hay permisos seleccionados para eliminar.");
+      alert("No hay permisos que cancelar.");
       return;
     }
 
@@ -106,7 +106,7 @@ class Roles extends Component {
         Permisos: updatedPermissions
       }
     });
-    alert("Permisos eliminados exitosamente");
+    alert("Permisos cancelados exitosamente");
   }
 
   mostrarModalInsertar = () => {
@@ -258,12 +258,12 @@ class Roles extends Component {
                       <td>
                         <ButtonGroup>
                           <Button
-                            color={elemento.Estado ? "success" : "secondary"}
+                            color={elemento.Estado ? "secondary" : "success"}
                             onClick={(e) => { e.stopPropagation(); this.cambiarEstado(elemento.id); }}
                             size="sm"
                             className="mr-1"
                           >
-                            {elemento.Estado ? "On" : "Off"}
+                            {elemento.Estado ? "off" : "on"}
                           </Button>
                           <Button
                             color="dark"
@@ -325,7 +325,7 @@ class Roles extends Component {
                     </tbody>
                   </Table>
                   <div className="d-flex justify-content-between">
-                    <Button color="danger" onClick={this.handleDeletePermissions} size="sm">Eliminar Permisos</Button>
+                    <Button color="danger" onClick={this.handleDeletePermissions} size="sm">No guardar permisos</Button>
                     <Button color="success" onClick={this.handleSavePermissions} size="sm">Guardar permisos</Button>
                   </div>
                 </div>
