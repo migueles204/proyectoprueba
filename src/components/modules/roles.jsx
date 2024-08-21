@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Table, Button, Container, Input, Row, Col, Modal, ModalBody, ModalFooter, ModalHeader, FormGroup, Label, ButtonGroup } from 'reactstrap';
+import { Table, Button, Container, Input, Row, Col, Modal, ModalBody, ModalFooter, ModalHeader, FormGroup, Label, ButtonGroup, Pagination, PaginationItem, PaginationLink } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 
@@ -41,6 +41,8 @@ class Roles extends Component {
     },
     modalInsertar: false,
     modalEditar: false,
+    currentPage: 1,
+    itemsPerPage: 5
   };
 
   handleChange = e => {
@@ -200,11 +202,21 @@ class Roles extends Component {
     this.setState({ selectedRole: rol });
   }
 
+  handlePageChange = (pageNumber) => {
+    this.setState({ currentPage: pageNumber });
+  }
+
   render() {
-    const { search, data, selectedRole, modalInsertar, modalEditar } = this.state;
+    const { search, data, selectedRole, modalInsertar, modalEditar, currentPage, itemsPerPage } = this.state;
     const filteredData = data.filter(item =>
       item.Rol.toLowerCase().includes(search.toLowerCase())
     );
+
+    // Calculate pagination values
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
     return (
       <>
@@ -237,7 +249,7 @@ class Roles extends Component {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredData.map((elemento) => (
+                  {currentItems.map((elemento) => (
                     <tr key={elemento.id} onClick={() => this.seleccionarRol(elemento)}>
                       <td>{elemento.id}</td>
                       <td>{elemento.Rol}</td>
@@ -245,24 +257,24 @@ class Roles extends Component {
                       <td>{elemento.Estado ? "Activo" : "Inactivo"}</td>
                       <td>
                         <ButtonGroup>
-                          <Button 
-                            color={elemento.Estado ? "success" : "secondary"} 
+                          <Button
+                            color={elemento.Estado ? "success" : "secondary"}
                             onClick={(e) => { e.stopPropagation(); this.cambiarEstado(elemento.id); }}
                             size="sm"
                             className="mr-1"
                           >
                             {elemento.Estado ? "On" : "Off"}
                           </Button>
-                          <Button 
-                            color="dark" 
+                          <Button
+                            color="dark"
                             onClick={(e) => { e.stopPropagation(); this.mostrarModalEditar(elemento); }}
                             size="sm"
                             className="mr-1"
                           >
                             <FontAwesomeIcon icon={faEdit} />
                           </Button>
-                          <Button 
-                            color="danger" 
+                          <Button
+                            color="danger"
                             onClick={(e) => { e.stopPropagation(); this.eliminar(elemento); }}
                             size="sm"
                           >
@@ -301,10 +313,10 @@ class Roles extends Component {
                           <td>{module}</td>
                           {permissions.map(permission => (
                             <td key={permission} style={{ padding: '0.25rem' }}>
-                              <Input 
-                                type="checkbox" 
-                                checked={selectedRole.Permisos[module][permission]} 
-                                onChange={() => this.handlePermissionChange(module, permission)} 
+                              <Input
+                                type="checkbox"
+                                checked={selectedRole.Permisos[module][permission]}
+                                onChange={() => this.handlePermissionChange(module, permission)}
                               />
                             </td>
                           ))}
@@ -320,9 +332,30 @@ class Roles extends Component {
               )}
             </Col>
           </Row>
+          <p></p>
+          {/* Paginación */}
+          <Row>
+            <Col className="d-flex justify-content-center">
+              <Pagination>
+                <PaginationItem disabled={currentPage === 1}>
+                  <PaginationLink previous onClick={() => this.handlePageChange(currentPage - 1)} />
+                </PaginationItem>
+                {[...Array(totalPages)].map((_, index) => (
+                  <PaginationItem key={index + 1} active={index + 1 === currentPage}>
+                    <PaginationLink onClick={() => this.handlePageChange(index + 1)}>
+                      {index + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem disabled={currentPage === totalPages}>
+                  <PaginationLink next onClick={() => this.handlePageChange(currentPage + 1)} />
+                </PaginationItem>
+              </Pagination>
+            </Col>
+          </Row>
 
           {/* Modal Insertar */}
-          <Modal isOpen={this.state.modalInsertar}>
+          <Modal isOpen={modalInsertar}>
             <ModalHeader>Insertar Nuevo Rol</ModalHeader>
             <ModalBody>
               <FormGroup>
@@ -340,7 +373,8 @@ class Roles extends Component {
             </ModalFooter>
           </Modal>
 
-          <Modal isOpen={this.state.modalEditar}>
+          {/* Modal Editar */}
+          <Modal isOpen={modalEditar}>
             <ModalHeader>Editar Rol</ModalHeader>
             <ModalBody>
               <FormGroup>
