@@ -1,45 +1,35 @@
 import React from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Table, Button, Container, Modal, ModalBody, ModalHeader, ModalFooter, FormGroup, Input } from 'reactstrap';
-import { FaEdit, FaTrashAlt } from 'react-icons/fa'; // Importar íconos de react-icons
+import { FaEdit, FaTrashAlt } from 'react-icons/fa';
 
-
-
-
+// Datos iniciales de clientes
 const data = [
-  {id:1, Nombre: "Carolina Guzman", Document:16514416, Correo: "guzman@gmail.com", Celular: "3546549", Nejemplares:5},
-  {id:2, Nombre: "Andra Torres", Document:18761919, Correo: "torres@gmail.com", Celular: "3546549",Nejemplares:2},
-  {id:3, Nombre: "Natalia Muriel", Document:1016177143, Correo: "muriel@gmail.com", Celular: "3546549",Nejemplares:1}
+  { id: 1, Nombre: "Carolina Guzman", Document: 16514416, Correo: "guzman@gmail.com", Celular: "3546549", Nejemplares: 5 },
+  { id: 2, Nombre: "Andra Torres", Document: 18761919, Correo: "torres@gmail.com", Celular: "3546549", Nejemplares: 2 },
+  { id: 3, Nombre: "Natalia Muriel", Document: 1016177143, Correo: "muriel@gmail.com", Celular: "3546549", Nejemplares: 1 }
 ];
 
-
-
-
-
-
-
-
 class Clientes extends React.Component {
- 
   state = {
     data: data,
     filteredData: data,
     form: {
-      id:'',
-      Nombre:'',
-      Document:'',
-      Correo:'',
+      id: '',
+      Nombre: '',
+      Document: '',
+      Correo: '',
       Celular: '',
       Nejemplares: ''
     },
     modalAñadir: false,
     modalEditar: false,
-    searchText: ''
+    searchText: '',
+    emailError: '',
+    documentError: ''
   };
 
-
-
-
+  // Maneja los cambios en los campos del formulario
   handleChange = e => {
     this.setState({
       form: {
@@ -49,9 +39,7 @@ class Clientes extends React.Component {
     });
   }
 
-
-
-
+  // Maneja la búsqueda de clientes
   handleSearch = e => {
     const searchText = e.target.value.toLowerCase();
     this.setState({
@@ -65,84 +53,91 @@ class Clientes extends React.Component {
     });
   }
 
-
-
-
+  // Muestra el modal para añadir un nuevo cliente
   mostrarmodalAñadir = () => {
-    this.setState({ modalAñadir: true });
+    this.setState({ modalAñadir: true, emailError: '', documentError: '' });
   }
 
-
-
-
+  // Oculta el modal para añadir un nuevo cliente
   ocultarmodalAñadir = () => {
     this.setState({ modalAñadir: false });
   }
 
-
-
-
+  // Muestra el modal para editar un cliente existente
   mostrarModalEditar = (registro) => {
-    this.setState({ modalEditar: true, form: registro });
+    this.setState({ modalEditar: true, form: registro, emailError: '', documentError: '' });
   }
 
-
-
-
+  // Oculta el modal para editar un cliente
   ocultarModalEditar = () => {
     this.setState({ modalEditar: false });
   }
 
+  // Valida el correo electrónico
+  validateEmail = email => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
 
+  // Valida si el documento ya existe
+  documentExists = document => {
+    return this.state.data.some(item => item.Document === document);
+  }
 
-
+  // Añade un nuevo cliente a la lista
   Añadir = () => {
-    var valorNuevo = { ...this.state.form };
-    valorNuevo.id = this.state.data.length + 1;
-    var lista = this.state.data;
-    lista.push(valorNuevo);
+    const { Nombre, Document, Correo, Celular, Nejemplares } = this.state.form;
+
+    // Validar correo electrónico
+    if (!this.validateEmail(Correo)) {
+      this.setState({ emailError: 'El correo electrónico no es válido.' });
+      return;
+    }
+
+    // Validar documento
+    if (this.documentExists(parseInt(Document))) {
+      this.setState({ documentError: 'El documento ya existe.' });
+      return;
+    }
+
+    const valorNuevo = { ...this.state.form, id: this.state.data.length + 1 };
+    const lista = [...this.state.data, valorNuevo];
     this.setState({ data: lista, filteredData: lista, modalAñadir: false });
   }
 
-
-
-
+  // Edita un cliente existente en la lista
   editar = (dato) => {
-    var contador = 0;
-    var lista = this.state.data;
-    lista.map((registro) => {
-      if (dato.id === registro.id) {
-        lista[contador].Nombre = dato.Nombre;
-        lista[contador].Document = dato.Document;
-        lista[contador].Correo = dato.Correo;
-        lista[contador].Celular = dato.Celular;
-        lista[contador].Nejemplares = dato.Nejemplares;
-      }
-      contador++;
-    });
+    // Validar correo electrónico
+    if (!this.validateEmail(dato.Correo)) {
+      this.setState({ emailError: 'El correo electrónico no es válido.' });
+      return;
+    }
+
+    // Validar documento
+    const existingDocument = this.state.data.find(item => item.Document === dato.Document && item.id !== dato.id);
+    if (existingDocument) {
+      this.setState({ documentError: 'El documento ya existe.' });
+      return;
+    }
+
+    const lista = this.state.data.map(registro =>
+      registro.id === dato.id ? { ...dato } : registro
+    );
     this.setState({ data: lista, filteredData: lista, modalEditar: false });
   }
 
-
-
-
+  // Elimina un cliente de la lista después de una confirmación
   eliminar = (dato) => {
-    var opcion = window.confirm("Realmente desea eliminar el registro " + dato.id);
+    const opcion = window.confirm("Realmente desea eliminar el registro " + dato.id);
     if (opcion) {
-      var contador = 0;
-      var lista = this.state.data;
-      lista.map((registro) => {
-        if (registro.id === dato.id) {
-          lista.splice(contador, 1);
-        }
-        contador++;
-      });
+      const lista = this.state.data.filter(registro => registro.id !== dato.id);
       this.setState({ data: lista, filteredData: lista });
     }
   }
 
-
   render() {
+    const { form, modalAñadir, modalEditar, emailError, documentError } = this.state;
+
     return (
       <>
         <Container>
@@ -150,17 +145,17 @@ class Clientes extends React.Component {
             <h1 className="text-center border p-2">Clientes</h1>
           </div>
           <div className="d-flex justify-content-between mb-3">
-  <Button color="success" onClick={this.mostrarmodalAñadir}>Añadir cliente</Button>
-  <Input
-    type="text"
-    placeholder="Buscar cliente"
-    value={this.state.searchText}
-    onChange={this.handleSearch}
-    style={{ width: '300px' }}
-  />
-</div>
+            <Button color="success" onClick={this.mostrarmodalAñadir}>Añadir cliente</Button>
+            <Input
+              type="text"
+              placeholder="Buscar cliente"
+              value={this.state.searchText}
+              onChange={this.handleSearch}
+              style={{ width: '300px' }}
+            />
+          </div>
          
-          <Table className="table table-bordered " style={{width: '1250px', height: '200px',}}>
+          <Table className="table table-bordered " style={{ width: '1250px', height: '200px' }}>
             <thead>
               <tr>
                 <th>Id</th>
@@ -191,58 +186,42 @@ class Clientes extends React.Component {
           </Table>
         </Container>
 
-
-
-
-        <Modal isOpen={this.state.modalAñadir}>
+        {/* Modal para añadir un nuevo cliente */}
+        <Modal isOpen={modalAñadir}>
           <ModalHeader>
             <div>
               <h3>Añadir cliente</h3>
             </div>
           </ModalHeader>
 
-
-
-
           <ModalBody>
-
-
             <FormGroup>
               <label>Nombre:</label>
               <input className="form-control" name="Nombre" type="text" onChange={this.handleChange} />
             </FormGroup>
 
-
-
-
             <FormGroup>
               <label>Documento:</label>
-              <input className="form-control" name="Documento" type="number" onChange={this.handleChange} />
+              <input className="form-control" name="Document" type="number" onChange={this.handleChange} />
+              <small className="text-danger">{this.state.documentError}</small>
             </FormGroup>
-
-
-
 
             <FormGroup>
               <label>Correo:</label>
               <input className="form-control" name="Correo" type="text" onChange={this.handleChange} />
+              <small className="text-danger">{emailError}</small>
             </FormGroup>
 
-
-
-
             <FormGroup>
-              <label>Celular: </label>
+              <label>Celular:</label>
               <input className="form-control" name="Celular" type="number" onChange={this.handleChange} />
             </FormGroup>
 
-
-
-
             <FormGroup>
-              <label>Numero de ejemplares a registrar: </label>
+              <label>Número de ejemplares a registrar:</label>
               <input className="form-control" name="Nejemplares" type="number" onChange={this.handleChange} />
             </FormGroup>
+
             <ModalFooter>
               <Button color="primary" onClick={this.Añadir}>Añadir</Button>
               <Button color="danger" onClick={this.ocultarmodalAñadir}>Cancelar</Button>
@@ -250,76 +229,51 @@ class Clientes extends React.Component {
           </ModalBody>
         </Modal>
 
-
-
-
-        <Modal isOpen={this.state.modalEditar}>
+        {/* Modal para editar un cliente existente */}
+        <Modal isOpen={modalEditar}>
           <ModalHeader>
             <div>
               <h3>Editar</h3>
             </div>
           </ModalHeader>
 
-
-
-
           <ModalBody>
-           <FormGroup>
+            <FormGroup>
               <label>Nombre:</label>
-              <input className="form-control" name="Nombre" type="text" onChange={this.handleChange} value={this.state.form.Nombre} />
+              <input className="form-control" name="Nombre" type="text" onChange={this.handleChange} value={form.Nombre} />
             </FormGroup>
-
-
-
 
             <FormGroup>
               <label>Documento:</label>
-              <input className="form-control" name="Documento" type="number" onChange={this.handleChange} value={this.state.form.Document} />
+              <input className="form-control" name="Document" type="number" onChange={this.handleChange} value={form.Document} />
+              <small className="text-danger">{documentError}</small>
             </FormGroup>
-
-
-
 
             <FormGroup>
-              <label>Correo: </label>
-              <input className="form-control" name="Correo" type="text" onChange={this.handleChange} value={this.state.form.Correo} />
+              <label>Correo:</label>
+              <input className="form-control" name="Correo" type="text" onChange={this.handleChange} value={form.Correo} />
+              <small className="text-danger">{emailError}</small>
             </FormGroup>
-
-
-
 
             <FormGroup>
-              <label>Celular: </label>
-              <input className="form-control" name="Celular" type="number" onChange={this.handleChange} value={this.state.form.Celular}/>
+              <label>Celular:</label>
+              <input className="form-control" name="Celular" type="number" onChange={this.handleChange} value={form.Celular} />
             </FormGroup>
+
             <FormGroup>
-              <label>Numero de ejemplares a registrar: </label>
-              <input className="form-control" name="Nejemplares" type="number" onChange={this.handleChange} value={this.state.form.Nejemplares}/>
+              <label>Número de ejemplares a registrar:</label>
+              <input className="form-control" name="Nejemplares" type="number" onChange={this.handleChange} value={form.Nejemplares} />
             </FormGroup>
+
             <ModalFooter>
-              <Button color="primary" onClick={() => this.editar(this.state.form)}>Editar</Button>
+              <Button color="primary" onClick={() => this.editar(form)}>Editar</Button>
               <Button color="danger" onClick={this.ocultarModalEditar}>Cancelar</Button>
             </ModalFooter>
           </ModalBody>
         </Modal>
       </>
-
-
-
-
     )
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-export default Clientes;
+export default Clientes;
