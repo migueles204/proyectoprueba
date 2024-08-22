@@ -112,6 +112,7 @@ export default class NavbarComp extends Component {
             <Route path='/Logout' element={<Logout />} />
           </Routes>
         </div>
+        <p></p>
       </Router>
     );
   }
