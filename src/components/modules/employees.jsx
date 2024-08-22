@@ -1,12 +1,13 @@
 import React from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Table, Button, Container, Modal, ModalBody, ModalHeader, ModalFooter, FormGroup, Input } from 'reactstrap';
-import { FaEdit, FaTrashAlt } from 'react-icons/fa';
+import { Table, Button, Container, Modal, ModalBody, ModalHeader, ModalFooter, FormGroup, Input, ButtonGroup } from 'reactstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 // Datos iniciales de empleados
 const data = [
-  { id: 1, Nombre: "Lionel", Apellido: "Messi", Correo: "messi@gmail.com", Celular: 3005242585, Rol: "palafrenero", estado: true },
-  { id: 2, Nombre: "Keimer", Apellido: "Lezcano", Correo: "keimer@gmail.com", Celular: 3000000000, Rol: "veterinario", estado: true },
+  { id: 1, Nombre: "Lionel", Apellido: "Messi", Correo: "messi@gmail.com", Celular: 3005242585, Rol: "palafrenero", estado: true, Documento: 123456789 },
+  { id: 2, Nombre: "Keimer", Apellido: "Lezcano", Correo: "keimer@gmail.com", Celular: 3000000000, Rol: "veterinario", estado: true, Documento: 987654321 },
 ];
 
 // Lista de roles disponibles para seleccionar
@@ -14,23 +15,35 @@ const roles = ["palafrenero", "veterinario", "cuidador", "administrador"];
 
 class Empleados extends React.Component {
   state = { 
-    data: data, // Datos originales de empleados
-    filteredData: data, // Datos filtrados según la búsqueda
+    data: data,
+    filteredData: data,
     form: {
-      id: '', // ID del empleado (se genera automáticamente)
-      Nombre: '', // Nombre del empleado
-      Apellido: '', // Apellido del empleado
-      Correo: '', // Correo electrónico del empleado
-      Celular: '', // Número de celular del empleado
-      Rol: 'Seleccione', // Rol del empleado (valor por defecto)
-      estado: true // Estado del empleado (activo/inactivo)
+      id: '',
+      Nombre: '',
+      Apellido: '',
+      Correo: '',
+      Celular: '',
+      Rol: '',
+      estado: true,
+      Documento: ''
     },
-    modalAñadir: false, // Estado que controla la visibilidad del modal de añadir
-    modalEditar: false, // Estado que controla la visibilidad del modal de editar
-    searchText: '' // Texto de búsqueda
+    modalAñadir: false,
+    modalEditar: false,
+    searchText: '',
+    emailError: '',
+    documentoError: '',
+    validationErrors: {},
   };
 
-  // Maneja los cambios en los campos del formulario
+  validateEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  }
+
+  checkDocumentoExists = (documento, excludeId = null) => {
+    return this.state.data.some(item => item.Documento === documento && item.id !== excludeId);
+  }
+
   handleChange = e => {
     const { name, value, type, checked } = e.target;
     this.setState({
@@ -38,10 +51,22 @@ class Empleados extends React.Component {
         ...this.state.form,
         [name]: type === 'checkbox' ? checked : value,
       }
+    }, () => {
+      if (name === 'Correo') {
+        const isValidEmail = this.validateEmail(this.state.form.Correo);
+        this.setState({
+          emailError: isValidEmail ? '' : 'Correo electrónico inválido.'
+        });
+      }
+      if (name === 'Documento') {
+        const documentoExists = this.checkDocumentoExists(this.state.form.Documento, this.state.form.id);
+        this.setState({
+          documentoError: documentoExists ? 'Documento ya existe.' : ''
+        });
+      }
     });
   }
 
-  // Maneja la búsqueda de empleados
   handleSearch = e => {
     const searchText = e.target.value.toLowerCase();
     this.setState({
@@ -50,48 +75,84 @@ class Empleados extends React.Component {
         item.Nombre.toLowerCase().includes(searchText) ||
         item.Apellido.toLowerCase().includes(searchText) ||
         item.Correo.toLowerCase().includes(searchText) ||
-        item.Rol.toLowerCase().includes(searchText)
+        item.Rol.toLowerCase().includes(searchText) ||
+        item.Documento.toString().includes(searchText)
       )
     });
   }
 
-  // Muestra el modal para añadir un nuevo empleado
   mostrarmodalAñadir = () => {
-    this.setState({ modalAñadir: true });
+    this.setState({ 
+      modalAñadir: true,
+      form: {
+        id: '',
+        Nombre: '',
+        Apellido: '',
+        Correo: '',
+        Celular: '',
+        Rol: '',
+        estado: true,
+        Documento: ''
+      },
+      emailError: '',
+      documentoError: '',
+      validationErrors: {}
+    });
   }
 
-  // Oculta el modal para añadir un nuevo empleado
   ocultarmodalAñadir = () => {
     this.setState({ modalAñadir: false });
   }
 
-  // Muestra el modal para editar un empleado existente
   mostrarModalEditar = (registro) => {
-    this.setState({ modalEditar: true, form: registro });
+    this.setState({ 
+      modalEditar: true, 
+      form: registro,
+      emailError: '',
+      documentoError: '',
+      validationErrors: {}
+    });
   }
 
-  // Oculta el modal para editar un empleado
   ocultarModalEditar = () => {
     this.setState({ modalEditar: false });
   }
 
-  // Añade un nuevo empleado a la lista
+  validateForm = () => {
+    const { Nombre, Apellido, Correo, Celular, Documento } = this.state.form;
+    let errors = {};
+    
+    if (!Nombre) errors.Nombre = 'Nombre es obligatorio.';
+    if (!Apellido) errors.Apellido = 'Apellido es obligatorio.';
+    if (!Correo) errors.Correo = 'Correo es obligatorio.';
+    if (!Celular) errors.Celular = 'Celular es obligatorio.';
+    if (!Documento) errors.Documento = 'Documento es obligatorio.';
+
+    if (!this.validateEmail(Correo)) errors.Correo = 'Correo electrónico inválido.';
+    if (this.checkDocumentoExists(Documento, this.state.form.id)) errors.Documento = 'Documento ya existe.';
+
+    this.setState({ validationErrors: errors });
+    return Object.keys(errors).length === 0;
+  }
+
   Añadir = () => {
+    if (!this.validateForm()) return;
+
     const valorNuevo = { ...this.state.form };
-    valorNuevo.id = this.state.data.length + 1; // Genera un nuevo ID
+    valorNuevo.id = this.state.data.length + 1; 
     const lista = [...this.state.data, valorNuevo];
     this.setState({ data: lista, filteredData: lista, modalAñadir: false });
   }
 
-  // Edita un empleado existente en la lista
   editar = (dato) => {
+    if (!this.validateForm()) return;
+
     const lista = this.state.data.map(registro =>
       registro.id === dato.id ? { ...dato } : registro
     );
     this.setState({ data: lista, filteredData: lista, modalEditar: false });
   }
 
-  // Elimina un empleado de la lista después de una confirmación
   eliminar = (dato) => {
     const opcion = window.confirm("Realmente desea eliminar el registro " + dato.id);
     if (opcion) {
@@ -100,7 +161,6 @@ class Empleados extends React.Component {
     }
   }
 
-  // Cambia el estado (activo/inactivo) de un empleado
   cambiarEstado = (id) => {
     const lista = this.state.data.map(registro =>
       registro.id === id ? { ...registro, estado: !registro.estado } : registro
@@ -109,6 +169,8 @@ class Empleados extends React.Component {
   }
 
   render() {
+    const { form, modalAñadir, modalEditar, emailError, documentoError, validationErrors } = this.state;
+
     return (
       <>
         <Container>
@@ -130,6 +192,7 @@ class Empleados extends React.Component {
                 <th>Id</th>
                 <th>Nombre</th>
                 <th>Apellido</th>
+                <th>Documento</th>
                 <th>Correo</th>
                 <th>Celular</th>
                 <th>Rol</th>
@@ -143,21 +206,37 @@ class Empleados extends React.Component {
                   <td>{elemento.id}</td>
                   <td>{elemento.Nombre}</td>
                   <td>{elemento.Apellido}</td>
+                  <td>{elemento.Documento}</td>
                   <td>{elemento.Correo}</td>
                   <td>{elemento.Celular}</td>
                   <td>{elemento.Rol}</td>
                   <td>{elemento.estado ? "Activo" : "Inactivo"}</td>
                   <td>
-                    <Button
-                      color={elemento.estado ? "success" : "secondary"}
-                      onClick={(e) => { e.stopPropagation(); this.cambiarEstado(elemento.id); }}
-                      size="sm"
-                      className="mr-1"
-                    >
-                      {elemento.estado ? "On" : "Off"}
-                    </Button>
-                    <Button color="primary" onClick={() => this.mostrarModalEditar(elemento)}><FaEdit /></Button>{' '}
-                    <Button color="danger" onClick={() => this.eliminar(elemento)}><FaTrashAlt /></Button>
+                    <ButtonGroup>
+                      <Button 
+                        color={elemento.estado ? "success" : "secondary"} 
+                        onClick={(e) => { e.stopPropagation(); this.cambiarEstado(elemento.id); }}
+                        size="sm"
+                        className="mr-1"
+                      >
+                        {elemento.estado ? "On" : "Off"}
+                      </Button>
+                      <Button 
+                        color="dark" 
+                        onClick={(e) => { e.stopPropagation(); this.mostrarModalEditar(elemento); }}
+                        size="sm"
+                        className="mr-1"
+                      >
+                        <FontAwesomeIcon icon={faEdit} />
+                      </Button>
+                      <Button 
+                        color="danger" 
+                        onClick={(e) => { e.stopPropagation(); this.eliminar(elemento); }}
+                        size="sm"
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </Button>
+                    </ButtonGroup>
                   </td>
                 </tr>
               ))}
@@ -165,114 +244,152 @@ class Empleados extends React.Component {
           </Table>
         </Container>
 
-        {/* Modal para añadir un nuevo empleado */}
-        <Modal isOpen={this.state.modalAñadir}>
-          <ModalHeader>
-            <div>
-              <h3>Añadir Empleado</h3>
-            </div>
-          </ModalHeader>
-
+        {/* Modal para añadir empleado */}
+        <Modal isOpen={modalAñadir} toggle={this.ocultarmodalAñadir}>
+          <ModalHeader toggle={this.ocultarmodalAñadir}>Añadir empleado</ModalHeader>
           <ModalBody>
             <FormGroup>
-              <label>Id:</label>
-              <input className="form-control" readOnly type="text" value={this.state.data.length + 1} />
+              <Input
+                type="text"
+                name="Nombre"
+                placeholder="Nombre"
+                value={form.Nombre}
+                onChange={this.handleChange}
+              />
+              <small className="text-danger">{validationErrors.Nombre}</small>
             </FormGroup>
-
             <FormGroup>
-              <label>Nombre:</label>
-              <input className="form-control" name="Nombre" type="text" onChange={this.handleChange} />
+              <Input
+                type="text"
+                name="Apellido"
+                placeholder="Apellido"
+                value={form.Apellido}
+                onChange={this.handleChange}
+              />
+              <small className="text-danger">{validationErrors.Apellido}</small>
             </FormGroup>
-
             <FormGroup>
-              <label>Apellido:</label>
-              <input className="form-control" name="Apellido" type="text" onChange={this.handleChange} />
+              <Input
+                type="text"
+                name="Correo"
+                placeholder="Correo"
+                value={form.Correo}
+                onChange={this.handleChange}
+              />
+              <small className="text-danger">{validationErrors.Correo || emailError}</small>
             </FormGroup>
-
             <FormGroup>
-              <label>Correo:</label>
-              <input className="form-control" name="Correo" type="text" onChange={this.handleChange} />
+              <Input
+                type="text"
+                name="Celular"
+                placeholder="Celular"
+                value={form.Celular}
+                onChange={this.handleChange}
+              />
+              <small className="text-danger">{validationErrors.Celular}</small>
             </FormGroup>
-
             <FormGroup>
-              <label>Celular:</label>
-              <input className="form-control" name="Celular" type="number" onChange={this.handleChange} />
-            </FormGroup>
-
-            <FormGroup>
-              <label>Rol:</label>
-              <select className="form-control" name="Rol" value={this.state.form.Rol} onChange={this.handleChange}>
-                {roles.map(role => (
-                  <option key={role} value={role}>{role}</option>
+              <Input
+                type="select"
+                name="Rol"
+                value={form.Rol}
+                onChange={this.handleChange}
+              >
+                <option value="">Seleccionar rol</option>
+                {roles.map((rol, index) => (
+                  <option key={index} value={rol}>{rol}</option>
                 ))}
-              </select>
+              </Input>
             </FormGroup>
-
             <FormGroup>
-              <label>Estado:</label>
-              <Input type="checkbox" name="estado" checked={this.state.form.estado} onChange={this.handleChange} />
+              <Input
+                type="text"
+                name="Documento"
+                placeholder="Documento"
+                value={form.Documento}
+                onChange={this.handleChange}
+              />
+              <small className="text-danger">{validationErrors.Documento || documentoError}</small>
             </FormGroup>
-
-            <ModalFooter>
-              <Button color="primary" onClick={this.Añadir}>Añadir</Button>
-              <Button color="danger" onClick={this.ocultarmodalAñadir}>Cancelar</Button>
-            </ModalFooter>
           </ModalBody>
+          <ModalFooter>
+            <Button color="secondary" onClick={this.ocultarmodalAñadir}>Cancelar</Button>
+            <Button color="primary" onClick={this.Añadir}>Añadir</Button>
+          </ModalFooter>
         </Modal>
 
-        {/* Modal para editar un empleado existente */}
-        <Modal isOpen={this.state.modalEditar}>
-          <ModalHeader>
-            <div>
-              <h3>Editar</h3>
-            </div>
-          </ModalHeader>
-
+        {/* Modal para editar empleado */}
+        <Modal isOpen={modalEditar} toggle={this.ocultarModalEditar}>
+          <ModalHeader toggle={this.ocultarModalEditar}>Editar empleado</ModalHeader>
           <ModalBody>
             <FormGroup>
-              <label>Id:</label>
-              <input className="form-control" readOnly type="text" value={this.state.form.id} />
+              <Input
+                type="text"
+                name="Nombre"
+                placeholder="Nombre"
+                value={form.Nombre}
+                onChange={this.handleChange}
+              />
+              <small className="text-danger">{validationErrors.Nombre}</small>
             </FormGroup>
-
             <FormGroup>
-              <label>Nombre:</label>
-              <input className="form-control" name="Nombre" type="text" onChange={this.handleChange} value={this.state.form.Nombre} />
+              <Input
+                type="text"
+                name="Apellido"
+                placeholder="Apellido"
+                value={form.Apellido}
+                onChange={this.handleChange}
+              />
+              <small className="text-danger">{validationErrors.Apellido}</small>
             </FormGroup>
-
             <FormGroup>
-              <label>Apellido:</label>
-              <input className="form-control" name="Apellido" type="text" onChange={this.handleChange} value={this.state.form.Apellido} />
+              <Input
+                type="text"
+                name="Correo"
+                placeholder="Correo"
+                value={form.Correo}
+                onChange={this.handleChange}
+              />
+              <small className="text-danger">{validationErrors.Correo || emailError}</small>
             </FormGroup>
-
             <FormGroup>
-              <label>Correo:</label>
-              <input className="form-control" name="Correo" type="text" onChange={this.handleChange} value={this.state.form.Correo} />
+              <Input
+                type="text"
+                name="Celular"
+                placeholder="Celular"
+                value={form.Celular}
+                onChange={this.handleChange}
+              />
+              <small className="text-danger">{validationErrors.Celular}</small>
             </FormGroup>
-
             <FormGroup>
-              <label>Celular:</label>
-              <input className="form-control" name="Celular" type="number" onChange={this.handleChange} value={this.state.form.Celular} />
-            </FormGroup>
-
-            <FormGroup>
-              <label>Rol:</label>
-              <select className="form-control" name="Rol" value={this.state.form.Rol} onChange={this.handleChange}>
-                {roles.map(role => (
-                  <option key={role} value={role}>{role}</option>
+              <Input
+                type="select"
+                name="Rol"
+                value={form.Rol}
+                onChange={this.handleChange}
+              >
+                <option value="">Seleccionar rol</option>
+                {roles.map((rol, index) => (
+                  <option key={index} value={rol}>{rol}</option>
                 ))}
-              </select>
+              </Input>
             </FormGroup>
-
             <FormGroup>
-              <label>Estado:</label>
-              <Input type="checkbox" name="estado" checked={this.state.form.estado} onChange={this.handleChange} />
+              <Input
+                type="text"
+                name="Documento"
+                placeholder="Documento"
+                value={form.Documento}
+                onChange={this.handleChange}
+              />
+              <small className="text-danger">{validationErrors.Documento || documentoError}</small>
             </FormGroup>
-
-            <ModalFooter>
-              <Button color="primary" onClick={() => this.editar(this.state.form)}>Guardar cambios</Button>
-              <Button color="danger" onClick={this.ocultarModalEditar}>Cancelar</Button>
-            </ModalFooter>
           </ModalBody>
+          <ModalFooter>
+            <Button color="secondary" onClick={this.ocultarModalEditar}>Cancelar</Button>
+            <Button color="primary" onClick={() => this.editar(form)}>Guardar cambios</Button>
+          </ModalFooter>
         </Modal>
       </>
     );
