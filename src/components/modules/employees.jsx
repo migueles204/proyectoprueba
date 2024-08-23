@@ -268,16 +268,33 @@ class Empleados extends React.Component {
                   <td>{elemento.Rol}</td>
                   <td>{elemento.Documento}</td>
                   <td>{elemento.estado ? 'Activo' : 'Inactivo'}</td>
-                  <td>
-                    <ButtonGroup>
-                      <Button color="primary" onClick={() => this.mostrarModalEditar(elemento)}>
-                        <FontAwesomeIcon icon={faEdit} />
-                      </Button>
-                      <Button color="danger" onClick={() => this.eliminar(elemento)}>
-                        <FontAwesomeIcon icon={faTrash} />
-                      </Button>
-                    </ButtonGroup>
-                  </td>
+                      <td>
+                        <ButtonGroup>
+                          <Button 
+                            color={elemento.estado ? "success" : "secondary"} 
+                            onClick={(e) => { e.stopPropagation(); this.cambiarEstado(elemento.id); }}
+                            size="sm"
+                            className="mr-1"
+                          >
+                            {elemento.estado ? "On" : "Off"}
+                          </Button>
+                          <Button 
+                            color="dark" 
+                            onClick={(e) => { e.stopPropagation(); this.mostrarModalEditar(elemento); }}
+                            size="sm"
+                            className="mr-1"
+                          >
+                            <FontAwesomeIcon icon={faEdit} />
+                          </Button>
+                          <Button 
+                            color="danger" 
+                            onClick={(e) => { e.stopPropagation(); this.eliminar(elemento); }}
+                            size="sm"
+                          >
+                            <FontAwesomeIcon icon={faTrash} />
+                          </Button>
+                        </ButtonGroup>
+                      </td>
                 </tr>
               ))}
             </tbody>
