@@ -1,7 +1,10 @@
 import React from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Table, Button, Container, Modal, ModalBody, ModalHeader, ModalFooter, FormGroup, Input } from 'reactstrap';
-import { FaEdit, FaTrashAlt } from 'react-icons/fa';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+import Swal from 'sweetalert2';
+//npm install @fortawesome/react-fontawesome @fortawesome/free-solid-svg-icons sweetalert2
 
 // Datos iniciales de clientes
 const data = [
@@ -26,10 +29,10 @@ class Clientes extends React.Component {
     modalEditar: false,
     searchText: '',
     emailError: '',
-    documentError: ''
+    documentError: '',
+    nameError: ''
   };
 
-  // Maneja los cambios en los campos del formulario
   handleChange = e => {
     this.setState({
       form: {
@@ -39,7 +42,6 @@ class Clientes extends React.Component {
     });
   }
 
-  // Maneja la búsqueda de clientes
   handleSearch = e => {
     const searchText = e.target.value.toLowerCase();
     this.setState({
@@ -53,40 +55,63 @@ class Clientes extends React.Component {
     });
   }
 
-  // Muestra el modal para añadir un nuevo cliente
   mostrarmodalAñadir = () => {
-    this.setState({ modalAñadir: true, emailError: '', documentError: '' });
+    this.setState({
+      modalAñadir: true,
+      emailError: '',
+      documentError: '',
+      nameError: '',
+      form: {
+        id: '',
+        Nombre: '',
+        Document: '',
+        Correo: '',
+        Celular: '',
+        Nejemplares: ''
+      }
+    });
   }
 
-  // Oculta el modal para añadir un nuevo cliente
   ocultarmodalAñadir = () => {
     this.setState({ modalAñadir: false });
   }
 
-  // Muestra el modal para editar un cliente existente
   mostrarModalEditar = (registro) => {
-    this.setState({ modalEditar: true, form: registro, emailError: '', documentError: '' });
+    this.setState({ modalEditar: true, form: registro, emailError: '', documentError: '', nameError: '' });
   }
 
-  // Oculta el modal para editar un cliente
   ocultarModalEditar = () => {
     this.setState({ modalEditar: false });
   }
 
-  // Valida el correo electrónico
   validateEmail = email => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
 
-  // Valida si el documento ya existe
+  validateName = name => {
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    return nameRegex.test(name);
+  }
+
   documentExists = document => {
     return this.state.data.some(item => item.Document === document);
   }
 
-  // Añade un nuevo cliente a la lista
   Añadir = () => {
     const { Nombre, Document, Correo, Celular, Nejemplares } = this.state.form;
+
+    // Validar campos obligatorios
+    if (!Nombre || !Document || !Correo || !Celular || !Nejemplares) {
+      Swal.fire('Error', 'Todos los campos son obligatorios.', 'error');
+      return;
+    }
+
+    // Validar nombre
+    if (!this.validateName(Nombre)) {
+      this.setState({ nameError: 'El nombre no puede contener números.' });
+      return;
+    }
 
     // Validar correo electrónico
     if (!this.validateEmail(Correo)) {
@@ -103,10 +128,22 @@ class Clientes extends React.Component {
     const valorNuevo = { ...this.state.form, id: this.state.data.length + 1 };
     const lista = [...this.state.data, valorNuevo];
     this.setState({ data: lista, filteredData: lista, modalAñadir: false });
+    Swal.fire('Éxito', 'Cliente registrado exitosamente.', 'success');
   }
 
-  // Edita un cliente existente en la lista
   editar = (dato) => {
+    // Validar campos obligatorios
+    if (!dato.Nombre || !dato.Document || !dato.Correo || !dato.Celular || !dato.Nejemplares) {
+      Swal.fire('Error', 'Todos los campos son obligatorios.', 'error');
+      return;
+    }
+
+    // Validar nombre
+    if (!this.validateName(dato.Nombre)) {
+      this.setState({ nameError: 'El nombre no puede contener números.' });
+      return;
+    }
+
     // Validar correo electrónico
     if (!this.validateEmail(dato.Correo)) {
       this.setState({ emailError: 'El correo electrónico no es válido.' });
@@ -124,19 +161,30 @@ class Clientes extends React.Component {
       registro.id === dato.id ? { ...dato } : registro
     );
     this.setState({ data: lista, filteredData: lista, modalEditar: false });
+    Swal.fire('Éxito', 'Cliente actualizado exitosamente.', 'success');
   }
 
-  // Elimina un cliente de la lista después de una confirmación
   eliminar = (dato) => {
-    const opcion = window.confirm("Realmente desea eliminar el registro " + dato.id);
-    if (opcion) {
-      const lista = this.state.data.filter(registro => registro.id !== dato.id);
-      this.setState({ data: lista, filteredData: lista });
-    }
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: `Realmente deseas eliminar el registro ${dato.id}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then(result => {
+      if (result.isConfirmed) {
+        const lista = this.state.data.filter(registro => registro.id !== dato.id);
+        this.setState({ data: lista, filteredData: lista });
+        Swal.fire('Eliminado', 'Cliente eliminado exitosamente.', 'success');
+      }
+    });
   }
 
   render() {
-    const { form, modalAñadir, modalEditar, emailError, documentError } = this.state;
+    const { form, modalAñadir, modalEditar, emailError, documentError, nameError } = this.state;
 
     return (
       <>
@@ -154,7 +202,7 @@ class Clientes extends React.Component {
               style={{ width: '300px' }}
             />
           </div>
-         
+
           <Table className="table table-bordered " style={{ width: '1250px', height: '200px' }}>
             <thead>
               <tr>
@@ -177,8 +225,12 @@ class Clientes extends React.Component {
                   <td>{elemento.Celular}</td>
                   <td>{elemento.Nejemplares}</td>
                   <td>
-                    <Button color="black" onClick={() => this.mostrarModalEditar(elemento)}><FaEdit /></Button>{' '}
-                    <Button color="danger" onClick={() => this.eliminar(elemento)}><FaTrashAlt /></Button>
+                    <Button color="dark" onClick={() => this.mostrarModalEditar(elemento)}>
+                      <FontAwesomeIcon icon={faEdit} size="sm" className="btn-sm" />
+                    </Button>{' '}
+                    <Button color="danger" onClick={() => this.eliminar(elemento)}>
+                      <FontAwesomeIcon icon={faTrash} size="sm" className="btn-sm" />
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -198,12 +250,13 @@ class Clientes extends React.Component {
             <FormGroup>
               <label>Nombre:</label>
               <input className="form-control" name="Nombre" type="text" onChange={this.handleChange} />
+              <small className="text-danger">{nameError}</small>
             </FormGroup>
 
             <FormGroup>
               <label>Documento:</label>
-              <input className="form-control" name="Document" type="number" onChange={this.handleChange} />
-              <small className="text-danger">{this.state.documentError}</small>
+              <input className="form-control" name="Document" type="text" onChange={this.handleChange} />
+              <small className="text-danger">{documentError}</small>
             </FormGroup>
 
             <FormGroup>
@@ -214,65 +267,96 @@ class Clientes extends React.Component {
 
             <FormGroup>
               <label>Celular:</label>
-              <input className="form-control" name="Celular" type="number" onChange={this.handleChange} />
+              <input className="form-control" name="Celular" type="text" onChange={this.handleChange} />
             </FormGroup>
 
             <FormGroup>
-              <label>Número de ejemplares a registrar:</label>
+              <label>Nejemplares:</label>
               <input className="form-control" name="Nejemplares" type="number" onChange={this.handleChange} />
             </FormGroup>
-
-            <ModalFooter>
-              <Button color="primary" onClick={this.Añadir}>Añadir</Button>
-              <Button color="danger" onClick={this.ocultarmodalAñadir}>Cancelar</Button>
-            </ModalFooter>
           </ModalBody>
+
+          <ModalFooter>
+            <Button color="primary" onClick={this.Añadir}>Añadir</Button>
+            <Button color="secondary" onClick={this.ocultarmodalAñadir}>Cancelar</Button>
+          </ModalFooter>
         </Modal>
 
-        {/* Modal para editar un cliente existente */}
+        {/* Modal para editar un cliente */}
         <Modal isOpen={modalEditar}>
           <ModalHeader>
             <div>
-              <h3>Editar</h3>
+              <h3>Editar cliente</h3>
             </div>
           </ModalHeader>
 
           <ModalBody>
             <FormGroup>
               <label>Nombre:</label>
-              <input className="form-control" name="Nombre" type="text" onChange={this.handleChange} value={form.Nombre} />
+              <input
+                className="form-control"
+                name="Nombre"
+                type="text"
+                value={form.Nombre}
+                onChange={this.handleChange}
+              />
+              <small className="text-danger">{nameError}</small>
             </FormGroup>
 
             <FormGroup>
               <label>Documento:</label>
-              <input className="form-control" name="Document" type="number" onChange={this.handleChange} value={form.Document} />
+              <input
+                className="form-control"
+                name="Document"
+                type="text"
+                value={form.Document}
+                onChange={this.handleChange}
+              />
               <small className="text-danger">{documentError}</small>
             </FormGroup>
 
             <FormGroup>
               <label>Correo:</label>
-              <input className="form-control" name="Correo" type="text" onChange={this.handleChange} value={form.Correo} />
+              <input
+                className="form-control"
+                name="Correo"
+                type="text"
+                value={form.Correo}
+                onChange={this.handleChange}
+              />
               <small className="text-danger">{emailError}</small>
             </FormGroup>
 
             <FormGroup>
               <label>Celular:</label>
-              <input className="form-control" name="Celular" type="number" onChange={this.handleChange} value={form.Celular} />
+              <input
+                className="form-control"
+                name="Celular"
+                type="text"
+                value={form.Celular}
+                onChange={this.handleChange}
+              />
             </FormGroup>
 
             <FormGroup>
-              <label>Número de ejemplares a registrar:</label>
-              <input className="form-control" name="Nejemplares" type="number" onChange={this.handleChange} value={form.Nejemplares} />
+              <label>Nejemplares:</label>
+              <input
+                className="form-control"
+                name="Nejemplares"
+                type="number"
+                value={form.Nejemplares}
+                onChange={this.handleChange}
+              />
             </FormGroup>
-
-            <ModalFooter>
-              <Button color="primary" onClick={() => this.editar(form)}>Editar</Button>
-              <Button color="danger" onClick={this.ocultarModalEditar}>Cancelar</Button>
-            </ModalFooter>
           </ModalBody>
+
+          <ModalFooter>
+            <Button color="primary" onClick={() => this.editar(form)}>Actualizar</Button>
+            <Button color="secondary" onClick={this.ocultarModalEditar}>Cancelar</Button>
+          </ModalFooter>
         </Modal>
       </>
-    )
+    );
   }
 }
 

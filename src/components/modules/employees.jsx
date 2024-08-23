@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Table, Button, Container, Modal, ModalBody, ModalHeader, ModalFooter, FormGroup, Input, ButtonGroup } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+import Swal from 'sweetalert2';
 
 // Datos iniciales de empleados
 const data = [
@@ -44,6 +45,12 @@ class Empleados extends React.Component {
     return this.state.data.some(item => item.Documento === documento && item.id !== excludeId);
   }
 
+  validateNameAndSurname = (text) => {
+    // Validar que solo contenga letras y espacios (puede modificar según requisitos)
+    const regex = /^[A-Za-z\s]+$/;
+    return regex.test(text);
+  }
+
   handleChange = e => {
     const { name, value, type, checked } = e.target;
     this.setState({
@@ -62,6 +69,15 @@ class Empleados extends React.Component {
         const documentoExists = this.checkDocumentoExists(this.state.form.Documento, this.state.form.id);
         this.setState({
           documentoError: documentoExists ? 'Documento ya existe.' : ''
+        });
+      }
+      if (name === 'Nombre' || name === 'Apellido') {
+        const isValidNameOrSurname = this.validateNameAndSurname(this.state.form[name]);
+        this.setState({
+          validationErrors: {
+            ...this.state.validationErrors,
+            [name]: isValidNameOrSurname ? '' : 'El campo solo puede contener letras y espacios.'
+          }
         });
       }
     });
@@ -130,6 +146,8 @@ class Empleados extends React.Component {
 
     if (!this.validateEmail(Correo)) errors.Correo = 'Correo electrónico inválido.';
     if (this.checkDocumentoExists(Documento, this.state.form.id)) errors.Documento = 'Documento ya existe.';
+    if (!this.validateNameAndSurname(Nombre)) errors.Nombre = 'Nombre solo puede contener letras y espacios.';
+    if (!this.validateNameAndSurname(Apellido)) errors.Apellido = 'Apellido solo puede contener letras y espacios.';
 
     this.setState({ validationErrors: errors });
     return Object.keys(errors).length === 0;
@@ -138,27 +156,66 @@ class Empleados extends React.Component {
   Añadir = () => {
     if (!this.validateForm()) return;
 
-    const valorNuevo = { ...this.state.form };
-    valorNuevo.id = this.state.data.length + 1; 
-    const lista = [...this.state.data, valorNuevo];
-    this.setState({ data: lista, filteredData: lista, modalAñadir: false });
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Deseas añadir este empleado?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, añadir',
+      cancelButtonText: 'Cancelar'
+    }).then(result => {
+      if (result.isConfirmed) {
+        const valorNuevo = { ...this.state.form };
+        valorNuevo.id = this.state.data.length + 1; 
+        const lista = [...this.state.data, valorNuevo];
+        this.setState({ data: lista, filteredData: lista, modalAñadir: false });
+        Swal.fire('Éxito', 'Empleado añadido exitosamente.', 'success');
+      }
+    });
   }
 
   editar = (dato) => {
     if (!this.validateForm()) return;
 
-    const lista = this.state.data.map(registro =>
-      registro.id === dato.id ? { ...dato } : registro
-    );
-    this.setState({ data: lista, filteredData: lista, modalEditar: false });
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Deseas guardar los cambios?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, guardar cambios',
+      cancelButtonText: 'Cancelar'
+    }).then(result => {
+      if (result.isConfirmed) {
+        const lista = this.state.data.map(registro =>
+          registro.id === dato.id ? { ...dato } : registro
+        );
+        this.setState({ data: lista, filteredData: lista, modalEditar: false });
+        Swal.fire('Éxito', 'Empleado actualizado exitosamente.', 'success');
+      }
+    });
   }
 
   eliminar = (dato) => {
-    const opcion = window.confirm("Realmente desea eliminar el registro " + dato.id);
-    if (opcion) {
-      const lista = this.state.data.filter(registro => registro.id !== dato.id);
-      this.setState({ data: lista, filteredData: lista });
-    }
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: `¿Realmente deseas eliminar el registro ${dato.id}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then(result => {
+      if (result.isConfirmed) {
+        const lista = this.state.data.filter(registro => registro.id !== dato.id);
+        this.setState({ data: lista, filteredData: lista });
+        Swal.fire('Eliminado', 'Empleado eliminado exitosamente.', 'success');
+      }
+    });
   }
 
   cambiarEstado = (id) => {
@@ -192,48 +249,31 @@ class Empleados extends React.Component {
                 <th>Id</th>
                 <th>Nombre</th>
                 <th>Apellido</th>
-                <th>Documento</th>
                 <th>Correo</th>
                 <th>Celular</th>
                 <th>Rol</th>
+                <th>Documento</th>
                 <th>Estado</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {this.state.filteredData.map((elemento) => (
-                <tr key={elemento.id}>
+              {this.state.filteredData.map((elemento, index) => (
+                <tr key={index}>
                   <td>{elemento.id}</td>
                   <td>{elemento.Nombre}</td>
                   <td>{elemento.Apellido}</td>
-                  <td>{elemento.Documento}</td>
                   <td>{elemento.Correo}</td>
                   <td>{elemento.Celular}</td>
                   <td>{elemento.Rol}</td>
-                  <td>{elemento.estado ? "Activo" : "Inactivo"}</td>
+                  <td>{elemento.Documento}</td>
+                  <td>{elemento.estado ? 'Activo' : 'Inactivo'}</td>
                   <td>
                     <ButtonGroup>
-                      <Button 
-                        color={elemento.estado ? "success" : "secondary"} 
-                        onClick={(e) => { e.stopPropagation(); this.cambiarEstado(elemento.id); }}
-                        size="sm"
-                        className="mr-1"
-                      >
-                        {elemento.estado ? "On" : "Off"}
-                      </Button>
-                      <Button 
-                        color="dark" 
-                        onClick={(e) => { e.stopPropagation(); this.mostrarModalEditar(elemento); }}
-                        size="sm"
-                        className="mr-1"
-                      >
+                      <Button color="primary" onClick={() => this.mostrarModalEditar(elemento)}>
                         <FontAwesomeIcon icon={faEdit} />
                       </Button>
-                      <Button 
-                        color="danger" 
-                        onClick={(e) => { e.stopPropagation(); this.eliminar(elemento); }}
-                        size="sm"
-                      >
+                      <Button color="danger" onClick={() => this.eliminar(elemento)}>
                         <FontAwesomeIcon icon={faTrash} />
                       </Button>
                     </ButtonGroup>
@@ -242,155 +282,185 @@ class Empleados extends React.Component {
               ))}
             </tbody>
           </Table>
+
+          <Modal isOpen={modalAñadir} toggle={this.ocultarmodalAñadir}>
+            <ModalHeader toggle={this.ocultarmodalAñadir}>Añadir Empleado</ModalHeader>
+            <ModalBody>
+              <FormGroup>
+                <label>Nombre:</label>
+                <Input
+                  type="text"
+                  name="Nombre"
+                  value={form.Nombre}
+                  onChange={this.handleChange}
+                  invalid={!!validationErrors.Nombre}
+                />
+                {validationErrors.Nombre && <div className="text-danger">{validationErrors.Nombre}</div>}
+              </FormGroup>
+              <FormGroup>
+                <label>Apellido:</label>
+                <Input
+                  type="text"
+                  name="Apellido"
+                  value={form.Apellido}
+                  onChange={this.handleChange}
+                  invalid={!!validationErrors.Apellido}
+                />
+                {validationErrors.Apellido && <div className="text-danger">{validationErrors.Apellido}</div>}
+              </FormGroup>
+              <FormGroup>
+                <label>Correo:</label>
+                <Input
+                  type="email"
+                  name="Correo"
+                  value={form.Correo}
+                  onChange={this.handleChange}
+                  invalid={!!emailError}
+                />
+                {emailError && <div className="text-danger">{emailError}</div>}
+              </FormGroup>
+              <FormGroup>
+                <label>Celular:</label>
+                <Input
+                  type="number"
+                  name="Celular"
+                  value={form.Celular}
+                  onChange={this.handleChange}
+                  invalid={!!validationErrors.Celular}
+                />
+                {validationErrors.Celular && <div className="text-danger">{validationErrors.Celular}</div>}
+              </FormGroup>
+              <FormGroup>
+                <label>Rol:</label>
+                <Input
+                  type="select"
+                  name="Rol"
+                  value={form.Rol}
+                  onChange={this.handleChange}
+                >
+                  <option value="">Seleccionar rol</option>
+                  {roles.map((rol, index) => (
+                    <option key={index} value={rol}>{rol}</option>
+                  ))}
+                </Input>
+                {validationErrors.Rol && <div className="text-danger">{validationErrors.Rol}</div>}
+              </FormGroup>
+              <FormGroup>
+                <label>Documento:</label>
+                <Input
+                  type="number"
+                  name="Documento"
+                  value={form.Documento}
+                  onChange={this.handleChange}
+                  invalid={!!documentoError}
+                />
+                {documentoError && <div className="text-danger">{documentoError}</div>}
+              </FormGroup>
+              <FormGroup>
+                <label>Estado:</label>
+                <Input
+                  type="checkbox"
+                  name="estado"
+                  checked={form.estado}
+                  onChange={this.handleChange}
+                />
+              </FormGroup>
+            </ModalBody>
+            <ModalFooter>
+              <Button color="secondary" onClick={this.ocultarmodalAñadir}>Cancelar</Button>
+              <Button color="primary" onClick={this.Añadir}>Añadir</Button>
+            </ModalFooter>
+          </Modal>
+
+          <Modal isOpen={modalEditar} toggle={this.ocultarModalEditar}>
+            <ModalHeader toggle={this.ocultarModalEditar}>Editar Empleado</ModalHeader>
+            <ModalBody>
+              <FormGroup>
+                <label>Nombre:</label>
+                <Input
+                  type="text"
+                  name="Nombre"
+                  value={form.Nombre}
+                  onChange={this.handleChange}
+                  invalid={!!validationErrors.Nombre}
+                />
+                {validationErrors.Nombre && <div className="text-danger">{validationErrors.Nombre}</div>}
+              </FormGroup>
+              <FormGroup>
+                <label>Apellido:</label>
+                <Input
+                  type="text"
+                  name="Apellido"
+                  value={form.Apellido}
+                  onChange={this.handleChange}
+                  invalid={!!validationErrors.Apellido}
+                />
+                {validationErrors.Apellido && <div className="text-danger">{validationErrors.Apellido}</div>}
+              </FormGroup>
+              <FormGroup>
+                <label>Correo:</label>
+                <Input
+                  type="email"
+                  name="Correo"
+                  value={form.Correo}
+                  onChange={this.handleChange}
+                  invalid={!!emailError}
+                />
+                {emailError && <div className="text-danger">{emailError}</div>}
+              </FormGroup>
+              <FormGroup>
+                <label>Celular:</label>
+                <Input
+                  type="number"
+                  name="Celular"
+                  value={form.Celular}
+                  onChange={this.handleChange}
+                  invalid={!!validationErrors.Celular}
+                />
+                {validationErrors.Celular && <div className="text-danger">{validationErrors.Celular}</div>}
+              </FormGroup>
+              <FormGroup>
+                <label>Rol:</label>
+                <Input
+                  type="select"
+                  name="Rol"
+                  value={form.Rol}
+                  onChange={this.handleChange}
+                >
+                  <option value="">Seleccionar rol</option>
+                  {roles.map((rol, index) => (
+                    <option key={index} value={rol}>{rol}</option>
+                  ))}
+                </Input>
+                {validationErrors.Rol && <div className="text-danger">{validationErrors.Rol}</div>}
+              </FormGroup>
+              <FormGroup>
+                <label>Documento:</label>
+                <Input
+                  type="number"
+                  name="Documento"
+                  value={form.Documento}
+                  onChange={this.handleChange}
+                  invalid={!!documentoError}
+                />
+                {documentoError && <div className="text-danger">{documentoError}</div>}
+              </FormGroup>
+              <FormGroup>
+                <label>Estado:</label>
+                <Input
+                  type="checkbox"
+                  name="estado"
+                  checked={form.estado}
+                  onChange={this.handleChange}
+                />
+              </FormGroup>
+            </ModalBody>
+            <ModalFooter>
+              <Button color="secondary" onClick={this.ocultarModalEditar}>Cancelar</Button>
+              <Button color="primary" onClick={() => this.editar(form)}>Guardar cambios</Button>
+            </ModalFooter>
+          </Modal>
         </Container>
-
-        {/* Modal para añadir empleado */}
-        <Modal isOpen={modalAñadir} toggle={this.ocultarmodalAñadir}>
-          <ModalHeader toggle={this.ocultarmodalAñadir}>Añadir empleado</ModalHeader>
-          <ModalBody>
-            <FormGroup>
-              <Input
-                type="text"
-                name="Nombre"
-                placeholder="Nombre"
-                value={form.Nombre}
-                onChange={this.handleChange}
-              />
-              <small className="text-danger">{validationErrors.Nombre}</small>
-            </FormGroup>
-            <FormGroup>
-              <Input
-                type="text"
-                name="Apellido"
-                placeholder="Apellido"
-                value={form.Apellido}
-                onChange={this.handleChange}
-              />
-              <small className="text-danger">{validationErrors.Apellido}</small>
-            </FormGroup>
-            <FormGroup>
-              <Input
-                type="text"
-                name="Correo"
-                placeholder="Correo"
-                value={form.Correo}
-                onChange={this.handleChange}
-              />
-              <small className="text-danger">{validationErrors.Correo || emailError}</small>
-            </FormGroup>
-            <FormGroup>
-              <Input
-                type="text"
-                name="Celular"
-                placeholder="Celular"
-                value={form.Celular}
-                onChange={this.handleChange}
-              />
-              <small className="text-danger">{validationErrors.Celular}</small>
-            </FormGroup>
-            <FormGroup>
-              <Input
-                type="select"
-                name="Rol"
-                value={form.Rol}
-                onChange={this.handleChange}
-              >
-                <option value="">Seleccionar rol</option>
-                {roles.map((rol, index) => (
-                  <option key={index} value={rol}>{rol}</option>
-                ))}
-              </Input>
-            </FormGroup>
-            <FormGroup>
-              <Input
-                type="text"
-                name="Documento"
-                placeholder="Documento"
-                value={form.Documento}
-                onChange={this.handleChange}
-              />
-              <small className="text-danger">{validationErrors.Documento || documentoError}</small>
-            </FormGroup>
-          </ModalBody>
-          <ModalFooter>
-            <Button color="secondary" onClick={this.ocultarmodalAñadir}>Cancelar</Button>
-            <Button color="primary" onClick={this.Añadir}>Añadir</Button>
-          </ModalFooter>
-        </Modal>
-
-        {/* Modal para editar empleado */}
-        <Modal isOpen={modalEditar} toggle={this.ocultarModalEditar}>
-          <ModalHeader toggle={this.ocultarModalEditar}>Editar empleado</ModalHeader>
-          <ModalBody>
-            <FormGroup>
-              <Input
-                type="text"
-                name="Nombre"
-                placeholder="Nombre"
-                value={form.Nombre}
-                onChange={this.handleChange}
-              />
-              <small className="text-danger">{validationErrors.Nombre}</small>
-            </FormGroup>
-            <FormGroup>
-              <Input
-                type="text"
-                name="Apellido"
-                placeholder="Apellido"
-                value={form.Apellido}
-                onChange={this.handleChange}
-              />
-              <small className="text-danger">{validationErrors.Apellido}</small>
-            </FormGroup>
-            <FormGroup>
-              <Input
-                type="text"
-                name="Correo"
-                placeholder="Correo"
-                value={form.Correo}
-                onChange={this.handleChange}
-              />
-              <small className="text-danger">{validationErrors.Correo || emailError}</small>
-            </FormGroup>
-            <FormGroup>
-              <Input
-                type="text"
-                name="Celular"
-                placeholder="Celular"
-                value={form.Celular}
-                onChange={this.handleChange}
-              />
-              <small className="text-danger">{validationErrors.Celular}</small>
-            </FormGroup>
-            <FormGroup>
-              <Input
-                type="select"
-                name="Rol"
-                value={form.Rol}
-                onChange={this.handleChange}
-              >
-                <option value="">Seleccionar rol</option>
-                {roles.map((rol, index) => (
-                  <option key={index} value={rol}>{rol}</option>
-                ))}
-              </Input>
-            </FormGroup>
-            <FormGroup>
-              <Input
-                type="text"
-                name="Documento"
-                placeholder="Documento"
-                value={form.Documento}
-                onChange={this.handleChange}
-              />
-              <small className="text-danger">{validationErrors.Documento || documentoError}</small>
-            </FormGroup>
-          </ModalBody>
-          <ModalFooter>
-            <Button color="secondary" onClick={this.ocultarModalEditar}>Cancelar</Button>
-            <Button color="primary" onClick={() => this.editar(form)}>Guardar cambios</Button>
-          </ModalFooter>
-        </Modal>
       </>
     );
   }
