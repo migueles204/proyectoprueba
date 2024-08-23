@@ -6,6 +6,7 @@ import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import Pagination from '@mui/lab/Pagination';
 import PaginationItem from '@mui/lab/PaginationItem';
 import { Link } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 const modules = [
   "Users", "Roles", "Employees", "Clients", "Services",
@@ -83,54 +84,99 @@ class Roles extends Component {
 
   handleSavePermissions = () => {
     const { selectedRole } = this.state;
-    
-    // Verifica si hay un rol seleccionado
     if (!selectedRole) {
-      alert("Debe seleccionar un rol para guardar los permisos.");
-      return; // Salir de la función si no hay rol seleccionado
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Debe seleccionar un rol para guardar los permisos.",
+        customClass: {
+          confirmButton: 'custom-swal'
+        }
+      });
+      return;
     }
+
+    const hasPermissions = Object.values(selectedRole.Permisos).some(
+      modulePermissions => Object.values(modulePermissions).includes(true)
+    );
   
-    // Verifica si hay permisos seleccionados
-    if (!selectedRole.permissions || selectedRole.permissions.length === 0) {
-      alert("Debe seleccionar al menos un permiso para guardar.");
-      return; // Salir de la función si no hay permisos seleccionados
+    if (!hasPermissions) {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Debe seleccionar al menos un permiso para guardar.",
+        customClass: {
+          confirmButton: 'custom-swal'
+        }
+      });
+      return;
     }
-  
-    // Si hay un rol seleccionado y permisos seleccionados, actualiza los datos
+
     const updatedData = this.state.data.map((registro) =>
       registro.id === selectedRole.id ? selectedRole : registro
     );
     
-    // Actualiza el estado con los datos modificados
     this.setState({ data: updatedData });
     
-    // Muestra una alerta de éxito
-    alert("Permisos guardados exitosamente");
-  }
+    Swal.fire({
+      position: "center",
+      icon: "success",
+      title: "Permisos guardados exitosamente",
+      showConfirmButton: false,
+      timer: 1500,
+      customClass: {
+        confirmButton: 'custom-swal'
+      }
+    });
+  }  
   
-
   handleDiscardPermissions = () => {
-    const { selectedRole } = this.state;
-    if (selectedRole) {
-      const resetPermissions = {};
-      modules.forEach(mod => {
-        resetPermissions[mod] = {
-          Visualizar: false,
-          Crear: false,
-          Desactivar: false,
-          Editar: false,
-          Eliminar: false,
-        };
-      });
-
-      this.setState(prevState => ({
-        selectedRole: {
-          ...prevState.selectedRole,
-          Permisos: resetPermissions
+    const { selectedRole, originalPermissions } = this.state;
+    if (!selectedRole) {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Debe seleccionar un rol para descartar los cambios.",
+        customClass: {
+          confirmButton: 'custom-swal'
         }
-      }));
-      alert("Cambios en permisos no guardados");
+      });
+      return;
     }
+
+    const hasPermissions = Object.values(selectedRole.Permisos).some(
+      modulePermissions => Object.values(modulePermissions).includes(true)
+    );
+  
+    if (!hasPermissions) {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "No hay permisos modificados para descartar.",
+        customClass: {
+          confirmButton: 'custom-swal'
+        }
+      });
+      return;
+    }
+
+    this.setState(prevState => ({
+      selectedRole: {
+        ...prevState.selectedRole,
+        Permisos: { ...prevState.originalPermissions }
+      }
+    }));
+  
+    Swal.fire({
+      position: "center",
+      icon: "info",
+      title: "Cambios en permisos descartados",
+      showConfirmButton: false,
+      timer: 1500,
+      customClass: {
+        confirmButton: 'custom-swal'
+      }
+    });
   }
 
   handleResetPermissions = () => {
@@ -167,72 +213,155 @@ class Roles extends Component {
   insertar = () => {
     try {
       const { Rol, Description } = this.state.form;
-
+  
       const regex = /^[A-Za-z][A-Za-z0-9\s]*$/;
       if (!regex.test(Rol)) {
-        alert("El nombre del rol no puede comenzar con un número ni contener caracteres especiales.");
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "El nombre del rol no puede comenzar con un número ni contener caracteres especiales.",
+          customClass: {
+            confirmButton: 'custom-swal'
+          }
+        });
         return;
       }
-
+  
       if (Rol.trim() === '' || Description.trim() === '') {
-        alert("Por favor, ingrese todos los campos");
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "Por favor, ingrese todos los campos",
+          customClass: {
+            confirmButton: 'custom-swal'
+          }
+        });
         return;
       }
-
+  
       const rolExistente = this.state.data.find(registro => registro.Rol.toLowerCase() === Rol.toLowerCase());
       if (rolExistente) {
         throw new Error("El rol ya existe. Por favor, ingrese un nombre de rol diferente.");
       }
-
+  
       const nuevoRol = { ...this.state.form, id: this.state.data.length + 1 };
       const lista = [...this.state.data, nuevoRol];
       this.setState({ data: lista, modalInsertar: false });
-      alert("Rol agregado exitosamente");
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Rol agregado exitosamente",
+        showConfirmButton: false,
+        timer: 1500,
+        customClass: {
+          confirmButton: 'custom-swal'
+        }
+      });
     } catch (error) {
-      alert(`Error al insertar el rol: ${error.message}`);
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: `Error al insertar el rol: ${error.message}`,
+        customClass: {
+          confirmButton: 'custom-swal'
+        }
+      });
     }
   }
 
   editar = () => {
     try {
       const { Rol, Description } = this.state.form;
-
+  
       const regex = /^[A-Za-z][A-Za-z0-9\s]*$/;
       if (!regex.test(Rol)) {
-        alert("El nombre del rol no puede comenzar con un número ni contener caracteres especiales.");
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "El nombre del rol no puede comenzar con un número ni contener caracteres especiales.",
+          customClass: {
+            confirmButton: 'custom-swal'
+          }
+        });
         return;
       }
-
+  
       if (Rol.trim() === '' || Description.trim() === '') {
-        alert("Por favor, ingrese todos los campos");
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "Por favor, ingrese todos los campos",
+          customClass: {
+            confirmButton: 'custom-swal'
+          }
+        });
         return;
       }
-
-      const rolExistente = this.state.data.find(
-        (registro) => registro.Rol.toLowerCase() === Rol.toLowerCase() && registro.id !== this.state.form.id
-      );
-      if (rolExistente) {
-        throw new Error("No puedes editar el rol con las mismas características de uno ya existente. Por favor, intenta algo diferente.");
-      }
-
+  
       const lista = this.state.data.map((registro) =>
         registro.id === this.state.form.id ? this.state.form : registro
       );
+  
       this.setState({ data: lista, modalEditar: false });
-      alert("Rol editado exitosamente");
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Rol editado exitosamente",
+        showConfirmButton: false,
+        timer: 1500,
+        customClass: {
+          confirmButton: 'custom-swal'
+        }
+      });
     } catch (error) {
-      alert(`Error al editar el rol: ${error.message}`);
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: `Error al editar el rol: ${error.message}`,
+        customClass: {
+          confirmButton: 'custom-swal'
+        }
+      });
     }
   }
 
-  eliminar = (dato) => {
-    const opcion = window.confirm("Realmente desea eliminar el rol " + dato.Rol + "?");
-    if (opcion) {
-      const lista = this.state.data.filter(registro => registro.id !== dato.id);
-      this.setState({ data: lista, selectedRole: null });
-      alert("Rol eliminado exitosamente");
-    }
+  eliminar = (id) => {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¡No podrás revertir esto!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'No, cancelar',
+      reverseButtons: true,
+      customClass: {
+        confirmButton: 'custom-swal',
+        cancelButton: 'custom-swal'
+      },
+      didOpen: (modal) => {
+        const icon = modal.querySelector('.swal2-icon.swal2-warning');
+        if (icon) {
+          icon.style.color = '#f1c40f';
+          icon.style.borderColor = '#f1c40f';
+        }
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.setState({ data: this.state.data.filter(item => item.id !== id) });
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: "Rol eliminado exitosamente",
+          showConfirmButton: false,
+          timer: 1500,
+          customClass: {
+            confirmButton: 'custom-swal'
+          }
+        });
+      }
+    });
   }
+
 
   cambiarEstado = (id) => {
     const lista = this.state.data.map((registro) => {
@@ -405,10 +534,7 @@ class Roles extends Component {
                         {permissions.map(permission => (
                           <td key={permission}>
                             <Input
-                              type="checkbox"
-                              disabled={module === "Dashboard" && permission !== "Visualizar"}
-                              checked={selectedRole ? selectedRole.Permisos[module][permission] : false}
-                              onChange={() => selectedRole && this.handlePermissionChange(module, permission)}
+                              type="checkbox" disabled={module === "Dashboard" && permission !== "Visualizar"} checked={selectedRole ? selectedRole.Permisos[module][permission] : false} onChange={() => selectedRole && this.handlePermissionChange(module, permission)}
                               style={{
                                 border: '2px solid #333',
                                 borderRadius: '0.25rem',
@@ -424,7 +550,7 @@ class Roles extends Component {
                 </Table>
               </div>
               <div className="d-flex justify-content-between mt-3">
-                <Button color="danger" onClick={this.handleDiscardPermissions} size="sm">No guardar cambios</Button>
+                <Button color="danger" onClick={this.handleDiscardPermissions} size="sm"> No guardar cambios</Button>
                 <Button color="success" onClick={this.handleSavePermissions} size="sm">Guardar permisos</Button>
               </div>
             </Col>
