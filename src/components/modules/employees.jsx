@@ -179,24 +179,11 @@ class Empleados extends React.Component {
   editar = (dato) => {
     if (!this.validateForm()) return;
 
-    Swal.fire({
-      title: '¿Estás seguro?',
-      text: '¿Deseas guardar los cambios?',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, guardar cambios',
-      cancelButtonText: 'Cancelar'
-    }).then(result => {
-      if (result.isConfirmed) {
-        const lista = this.state.data.map(registro =>
-          registro.id === dato.id ? { ...dato } : registro
-        );
-        this.setState({ data: lista, filteredData: lista, modalEditar: false });
-        Swal.fire('Éxito', 'Empleado actualizado exitosamente.', 'success');
-      }
-    });
+    const lista = this.state.data.map(registro =>
+      registro.id === dato.id ? { ...dato } : registro
+    );
+    this.setState({ data: lista, filteredData: lista, modalEditar: false });
+    Swal.fire('Éxito', 'Empleado actualizado exitosamente.', 'success');
   }
 
   eliminar = (dato) => {
