@@ -4,6 +4,9 @@ import { Table, Button, Container, Modal, ModalBody, ModalHeader, ModalFooter, F
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
+import Pagination from '@mui/material/Pagination';
+import PaginationItem from '@mui/material/PaginationItem';
+
 
 // Datos iniciales de empleados
 const data = [
