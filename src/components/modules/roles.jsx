@@ -74,6 +74,7 @@ class Roles extends Component {
 
     const updatedPermissions = { ...this.state.selectedRole.Permisos };
     updatedPermissions[module][permission] = !updatedPermissions[module][permission];
+    
     this.setState(prevState => ({
       selectedRole: {
         ...prevState.selectedRole,

@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 
-export default class Venues extends Component{
+export default class venues extends Component{
     render(){
         return(
             <div>
