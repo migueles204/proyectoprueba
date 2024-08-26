@@ -13,7 +13,7 @@ import Roles from '../components/modules/roles';
 import Employees from '../components/modules/employees';
 import Clients from '../components/modules/clients';
 import Services from '../components/modules/services';
-import Venues from '../components/modules/venues';
+import Headquarters from '../components/modules/headquarters';
 import Categoryofspecimens from '../components/modules/categoryofspecimens';
 import Transfers from '../components/modules/transfers';
 import Records from '../components/modules/records';
@@ -66,7 +66,7 @@ export default class NavbarComp extends Component {
                 <Nav.Link as={Link} to="/Employees" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Employees</Nav.Link>
                 <Nav.Link as={Link} to="/Clients" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Clients</Nav.Link>
                 <Nav.Link as={Link} to="/Services" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Services</Nav.Link>
-                <Nav.Link as={Link} to="/Venues" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Venues</Nav.Link>
+                <Nav.Link as={Link} to="/Headquarters" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Headquarters</Nav.Link>
                 <Nav.Link as={Link} to="/Categoryofspecimens" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Category of Specimens</Nav.Link>
                 <Nav.Link as={Link} to="/Transfers" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Transfers</Nav.Link>
                 <Nav.Link as={Link} to="/Records" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Records</Nav.Link>
@@ -104,7 +104,7 @@ export default class NavbarComp extends Component {
             <Route path='/Employees' element={<Employees />} />
             <Route path='/Clients' element={<Clients />} />
             <Route path='/Services' element={<Services />} />
-            <Route path='/Venues' element={<Venues />} />
+            <Route path='/Headquarters' element={<Headquarters />} />
             <Route path='/Categoryofspecimens' element={<Categoryofspecimens />} />
             <Route path='/Transfers' element={<Transfers />} />
             <Route path='/Records' element={<Records />} />
