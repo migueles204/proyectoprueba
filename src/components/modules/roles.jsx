@@ -133,6 +133,7 @@ class Roles extends Component {
   
   handleDiscardPermissions = () => {
     const { selectedRole, originalPermissions } = this.state;
+  
     if (!selectedRole) {
       Swal.fire({
         icon: "error",
@@ -145,41 +146,42 @@ class Roles extends Component {
       return;
     }
 
-    const hasPermissions = Object.values(selectedRole.Permisos).some(
-      modulePermissions => Object.values(modulePermissions).includes(true)
+    const hasPermissions=Object.values(selectedRole.Permisos).some(
+      modulePermissions=>Object.values(modulePermissions).includes(true)
     );
-  
-    if (!hasPermissions) {
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: "No hay permisos modificados para descartar.",
-        customClass: {
-          confirmButton: 'custom-swal'
-        }
-      });
-      return;
-    }
 
+    if(!hasPermissions){
+      Swal.fire({
+        icon:"error",
+        title:"Oops...",
+        text:"No hay permisos modificados para descartar.",
+        customClass:{
+          confirmButton:'custom-swal'
+        }
+    });
+    return;
+    }
+  
+    // Restaurar permisos originales
     this.setState(prevState => ({
       selectedRole: {
         ...prevState.selectedRole,
         Permisos: { ...prevState.originalPermissions }
       }
-    }));
-  
-    Swal.fire({
-      position: "center",
-      icon: "info",
-      title: "Cambios en permisos descartados",
-      showConfirmButton: false,
-      timer: 1500,
-      customClass: {
-        confirmButton: 'custom-swal'
-      }
+    }), () => {
+      Swal.fire({
+        position: "center",
+        icon: "info",
+        title: "Cambios en permisos descartados",
+        showConfirmButton: false,
+        timer: 1500,
+        customClass: {
+          confirmButton: 'custom-swal'
+        }
+      });
     });
-  }
-
+  };
+  
   handleResetPermissions = () => {
     const { selectedRole, originalPermissions } = this.state;
     if (selectedRole) {
@@ -190,7 +192,7 @@ class Roles extends Component {
         }
       }));
     }
-  }
+  }    
 
   mostrarModalInsertar = () => {
     this.setState({
@@ -332,6 +334,8 @@ class Roles extends Component {
       text: '¡No podrás revertir esto!',
       icon: 'warning',
       showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'No, cancelar',
       reverseButtons: true,
@@ -361,8 +365,7 @@ class Roles extends Component {
         });
       }
     });
-  }
-
+  }  
 
   cambiarEstado = (id) => {
     const lista = this.state.data.map((registro) => {
@@ -377,14 +380,14 @@ class Roles extends Component {
 
   seleccionarRol = (rol) => {
     if (this.state.selectedRole && JSON.stringify(this.state.selectedRole.Permisos) !== JSON.stringify(this.state.originalPermissions)) {
-      this.handleResetPermissions();
+      this.handleDiscardPermissions(); // Descartar cambios si hay cambios no guardados
+    } else {
+      this.setState({
+        selectedRole: rol,
+        originalPermissions: { ...rol.Permisos } // Guardar permisos originales
+      });
     }
-
-    this.setState({
-      selectedRole: rol,
-      originalPermissions: { ...rol.Permisos }
-    });
-  }
+  };    
 
   handlePageChange = (event, newPage) => {
     this.setState({ page: newPage });
@@ -519,40 +522,43 @@ class Roles extends Component {
                 />
               </div>
               <div style={{ marginTop: '1rem' }}>
-                <Table className="table table-bordered" style={{ fontSize: '0.875rem' }}>
-                  <thead>
-                    <tr>
-                      <th>Permiso/Privilegio</th>
+              <Table className="table table-bordered" style={{ fontSize: '0.875rem' }}>
+                <thead>
+                  <tr>
+                    <th>Permiso/Privilegio</th>
+                    {permissions.map(permission => (
+                      <th key={permission}>{permission}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {modules.map(module => (
+                    <tr key={module}>
+                      <td>{module}</td>
                       {permissions.map(permission => (
-                        <th key={permission}>{permission}</th>
+                        <td key={permission}>
+                          <Input
+                            type="checkbox"
+                            disabled={module === "Dashboard" && permission !== "Visualizar"}
+                            checked={selectedRole ? selectedRole.Permisos[module][permission] : false}
+                            onChange={() => selectedRole && this.handlePermissionChange(module, permission)}
+                            style={{
+                              border: '2px solid #333',
+                              borderRadius: '0.25rem',
+                              width: '16px',
+                              height: '16px'
+                            }}
+                          />
+                        </td>
                       ))}
                     </tr>
-                  </thead>
-                  <tbody>
-                    {modules.map(module => (
-                      <tr key={module}>
-                        <td>{module}</td>
-                        {permissions.map(permission => (
-                          <td key={permission}>
-                            <Input
-                              type="checkbox" disabled={module === "Dashboard" && permission !== "Visualizar"} checked={selectedRole ? selectedRole.Permisos[module][permission] : false} onChange={() => selectedRole && this.handlePermissionChange(module, permission)}
-                              style={{
-                                border: '2px solid #333',
-                                borderRadius: '0.25rem',
-                                width: '16px',
-                                height: '16px'
-                              }}
-                            />
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
+                  ))}
+                </tbody>
+              </Table>
               </div>
               <div className="d-flex justify-content-between mt-3">
-                <Button color="danger" onClick={this.handleDiscardPermissions} size="sm"> No guardar cambios</Button>
-                <Button color="success" onClick={this.handleSavePermissions} size="sm">Guardar permisos</Button>
+              <Button color="danger" onClick={this.handleDiscardPermissions} size="sm"> No guardar cambios</Button>
+              <Button color="success" onClick={this.handleSavePermissions} size="sm">Guardar permisos</Button>
               </div>
             </Col>
           </Row>
