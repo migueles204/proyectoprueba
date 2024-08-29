@@ -203,7 +203,7 @@ class Clientes extends React.Component {
             />
           </div>
 
-          <Table className="table table-bordered " style={{ width: '1250px', height: '200px' }}>
+          <Table className="table table-bordered">
             <thead>
               <tr>
                 <th>Id</th>
