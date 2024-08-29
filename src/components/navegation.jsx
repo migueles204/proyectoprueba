@@ -8,6 +8,7 @@ import { FaMoon, FaSun } from 'react-icons/fa';
 import { MdOutlineLogout } from "react-icons/md";
 
 import Profile from '../components/modules/profile';
+import Dashboard from '../components/modules/dashboard';
 import Users from '../components/modules/users';
 import Roles from '../components/modules/roles';
 import Employees from '../components/modules/employees';
@@ -15,9 +16,9 @@ import Clients from '../components/modules/clients';
 import Services from '../components/modules/services';
 import Headquarters from '../components/modules/headquarters';
 import Categoryofspecimens from '../components/modules/categoryofspecimens';
+import Tracking from '../components/modules/tracking';
 import Transfers from '../components/modules/transfers';
 import Records from '../components/modules/records';
-import Dashboard from '../components/modules/dashboard';
 import Logout from '../components/modules/logout';
 
 export default class NavbarComp extends Component {
@@ -61,16 +62,17 @@ export default class NavbarComp extends Component {
               </Navbar.Brand>
               <Nav className="mx-auto">
                 <Nav.Link as={Link} to="/Profile" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Profile</Nav.Link>
+                <Nav.Link as={Link} to="/Dashboard" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Dashboard</Nav.Link>
                 <Nav.Link as={Link} to="/Users" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Users</Nav.Link>
                 <Nav.Link as={Link} to="/Roles" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Roles</Nav.Link>
                 <Nav.Link as={Link} to="/Employees" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Employees</Nav.Link>
                 <Nav.Link as={Link} to="/Clients" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Clients</Nav.Link>
                 <Nav.Link as={Link} to="/Services" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Services</Nav.Link>
                 <Nav.Link as={Link} to="/Headquarters" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Headquarters</Nav.Link>
-                <Nav.Link as={Link} to="/Categoryofspecimens" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Category of Specimens</Nav.Link>
+                <Nav.Link as={Link} to="/Categoryofspecimens" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Specimens</Nav.Link>
+                <Nav.Link as={Link} to="/Tracking" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Tracking</Nav.Link>
                 <Nav.Link as={Link} to="/Transfers" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Transfers</Nav.Link>
                 <Nav.Link as={Link} to="/Records" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Records</Nav.Link>
-                <Nav.Link as={Link} to="/Dashboard" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Dashboard</Nav.Link>
                 <Nav.Link as={Link} to="/Logout" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>
                 Log out
                   <MdOutlineLogout style={{ marginRight: '8px', fontSize: '1.75rem' }} />
@@ -99,6 +101,7 @@ export default class NavbarComp extends Component {
 
           <Routes>
             <Route path='/Profile' element={<Profile />} />
+            <Route path='/Dashboard' element={<Dashboard />} />
             <Route path='/Users' element={<Users />} />
             <Route path='/Roles' element={<Roles />} />
             <Route path='/Employees' element={<Employees />} />
@@ -106,9 +109,9 @@ export default class NavbarComp extends Component {
             <Route path='/Services' element={<Services />} />
             <Route path='/Headquarters' element={<Headquarters />} />
             <Route path='/Categoryofspecimens' element={<Categoryofspecimens />} />
+            <Route path='/Tracking' element={<Tracking />} />
             <Route path='/Transfers' element={<Transfers />} />
             <Route path='/Records' element={<Records />} />
-            <Route path='/Dashboard' element={<Dashboard />} />
             <Route path='/Logout' element={<Logout />} />
           </Routes>
         </div>
