@@ -336,12 +336,12 @@ class Roles extends Component {
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'No, cancelar',
+      confirmButtonText: 'Sí, eliminar',
       reverseButtons: true,
       customClass: {
-        confirmButton: 'custom-swal',
-        cancelButton: 'custom-swal'
+        cancelButton: 'custom-swal',
+        confirmButton: 'custom-swal'
       },
       didOpen: (modal) => {
         const icon = modal.querySelector('.swal2-icon.swal2-warning');
