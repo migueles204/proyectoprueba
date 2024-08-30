@@ -363,15 +363,6 @@ class Empleados extends React.Component {
                 />
                 {documentoError && <div className="text-danger">{documentoError}</div>}
               </FormGroup>
-              <FormGroup>
-                <label>Estado:</label>
-                <Input
-                  type="checkbox"
-                  name="estado"
-                  checked={form.estado}
-                  onChange={this.handleChange}
-                />
-              </FormGroup>
             </ModalBody>
             <ModalFooter>
               <Button color="secondary" onClick={this.ocultarmodalAñadir}>Cancelar</Button>
@@ -451,15 +442,6 @@ class Empleados extends React.Component {
                   invalid={!!documentoError}
                 />
                 {documentoError && <div className="text-danger">{documentoError}</div>}
-              </FormGroup>
-              <FormGroup>
-                <label>Estado:</label>
-                <Input
-                  type="checkbox"
-                  name="estado"
-                  checked={form.estado}
-                  onChange={this.handleChange}
-                />
               </FormGroup>
             </ModalBody>
             <ModalFooter>

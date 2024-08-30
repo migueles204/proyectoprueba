@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom'; // Importa useNavigate para la navegación
-import { FaTrash } from 'react-icons/fa'; // Importa el ícono de la caneca de basura
+import { FaTrash, FaEdit } from 'react-icons/fa'; // Importa el ícono de la caneca de basura y el ícono de edición
 
 // Estilos en línea para el componente
 const estilos = {
@@ -58,7 +58,7 @@ const estilos = {
   },
   btnVer: {
     padding: '10px',
-    backgroundColor: '#007bff',
+    backgroundColor: '#000000',
     color: '#fff',
     border: 'none',
     borderRadius: '4px',
@@ -67,7 +67,7 @@ const estilos = {
     flex: '1',
   },
   btnVerHover: {
-    backgroundColor: '#0056b3',
+    backgroundColor: '#e2b82c',
   },
   btnEliminar: {
     padding: '10px',
@@ -78,6 +78,16 @@ const estilos = {
     fontSize: '1rem',
     cursor: 'pointer',
     marginLeft: '10px', // Espacio entre el botón de eliminar y el botón de ver
+  },
+  btnEditar: {
+    padding: '10px',
+    backgroundColor: '#007bff',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: '1rem',
+    cursor: 'pointer',
+    marginLeft: '10px', // Espacio entre el botón de editar y el botón de eliminar
   },
   btnAgregar: {
     position: 'absolute',
@@ -97,7 +107,7 @@ const estilos = {
 };
 
 // Componente Tarjeta
-const Tarjeta = ({ id, titulo, espaciosDisponibles, ejemplaresRegistrados, onEliminar }) => {
+const Tarjeta = ({ id, titulo, espaciosDisponibles, ejemplaresRegistrados, onEliminar, onEditar }) => {
   const [hover, setHover] = React.useState(false);
   const navigate = useNavigate(); // Hook para navegación
 
@@ -127,6 +137,23 @@ const Tarjeta = ({ id, titulo, espaciosDisponibles, ejemplaresRegistrados, onEli
     }
   };
 
+  const handleEditarClick = async () => {
+    const { value: nuevoNombre } = await Swal.fire({
+      title: 'Editar nombre de la sede',
+      input: 'text',
+      inputLabel: 'Nuevo nombre',
+      inputValue: titulo,
+      inputPlaceholder: 'Escribe el nuevo nombre de la sede',
+      confirmButtonText: 'Guardar',
+      showCancelButton: true,
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (nuevoNombre) {
+      onEditar(id, nuevoNombre);
+    }
+  };
+
   return (
     <div
       style={estilos.tarjeta}
@@ -149,13 +176,19 @@ const Tarjeta = ({ id, titulo, espaciosDisponibles, ejemplaresRegistrados, onEli
           style={{ ...estilos.btnVer, ...(hover && estilos.btnVerHover) }}
           onClick={handleVerClick}
         >
-          Ver
+          <i className="fas fa-eye"></i>
         </button>
         <button
           style={estilos.btnEliminar}
           onClick={handleEliminarClick}
         >
           <FaTrash />
+        </button>
+        <button
+          style={estilos.btnEditar}
+          onClick={handleEditarClick}
+        >
+          <FaEdit />
         </button>
       </div>
     </div>
@@ -165,7 +198,7 @@ const Tarjeta = ({ id, titulo, espaciosDisponibles, ejemplaresRegistrados, onEli
 // Componente Headquarters
 const Headquarters = () => {
   const [tarjetas, setTarjetas] = useState([
-    { id: 1, titulo: 'Tarjeta 1', espaciosDisponibles: '', ejemplaresRegistrados: '' },
+    { id: 1, titulo: 'Girardota', espaciosDisponibles: '', ejemplaresRegistrados: '' },
     // Puedes inicializar con más tarjetas si lo deseas
   ]);
 
@@ -174,7 +207,7 @@ const Headquarters = () => {
       title: 'Agregar nueva sede',
       input: 'text',
       inputLabel: 'Nombre de la sede',
-      inputPlaceholder: 'Escribe el nombre de la sede',
+      inputPlaceholder: 'Ingresa el nombre de la sede',
       confirmButtonText: 'Agregar',
       showCancelButton: true,
       cancelButtonText: 'Cancelar',
@@ -195,9 +228,14 @@ const Headquarters = () => {
     setTarjetas(tarjetas.filter(tarjeta => tarjeta.id !== id));
   };
 
+  const handleEditarTarjeta = (id, nuevoNombre) => {
+    setTarjetas(tarjetas.map(tarjeta =>
+      tarjeta.id === id ? { ...tarjeta, titulo: nuevoNombre } : tarjeta
+    ));
+  };
+
   return (
     <div style={estilos.headquarters}>
-      <h1 style={estilos.h1}>Headquarters</h1>
       <button
         style={estilos.btnAgregar}
         onClick={handleAgregarTarjeta}
@@ -213,6 +251,7 @@ const Headquarters = () => {
             espaciosDisponibles={tarjeta.espaciosDisponibles}
             ejemplaresRegistrados={tarjeta.ejemplaresRegistrados}
             onEliminar={handleEliminarTarjeta}
+            onEditar={handleEditarTarjeta}
           />
         ))}
       </div>
