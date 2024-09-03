@@ -193,14 +193,14 @@ class Clientes extends React.Component {
             <h1 className="text-center border p-2">Clientes</h1>
           </div>
           <div className="d-flex justify-content-between mb-3">
-            <Button color="success" onClick={this.mostrarmodalAñadir}>Añadir cliente</Button>
-            <Input
+          <Input
               type="text"
-              placeholder="Buscar cliente"
+              placeholder="Buscar"
               value={this.state.searchText}
               onChange={this.handleSearch}
               style={{ width: '300px' }}
             />
+            <Button color="success" onClick={this.mostrarmodalAñadir}>Añadir cliente</Button>
           </div>
 
           <Table className="table table-bordered">

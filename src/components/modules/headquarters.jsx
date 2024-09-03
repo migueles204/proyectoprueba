@@ -1,4 +1,4 @@
-// Headquarters.js
+// Headquarters.jsx
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom'; // Importa useNavigate para la navegación
@@ -81,7 +81,7 @@ const estilos = {
   },
   btnEditar: {
     padding: '10px',
-    backgroundColor: '#007bff',
+    backgroundColor: '#000000',
     color: '#fff',
     border: 'none',
     borderRadius: '4px',
@@ -112,7 +112,7 @@ const Tarjeta = ({ id, titulo, espaciosDisponibles, ejemplaresRegistrados, onEli
   const navigate = useNavigate(); // Hook para navegación
 
   const handleVerClick = () => {
-    navigate('/detalles'); // Redirige a la vista de detalles
+    navigate(`/Specimens?id=${id}`); // Navega a la vista Specimens con el ID
   };
 
   const handleEliminarClick = async () => {
@@ -176,7 +176,7 @@ const Tarjeta = ({ id, titulo, espaciosDisponibles, ejemplaresRegistrados, onEli
           style={{ ...estilos.btnVer, ...(hover && estilos.btnVerHover) }}
           onClick={handleVerClick}
         >
-          <i className="fas fa-eye"></i>
+          Ver
         </button>
         <button
           style={estilos.btnEliminar}

@@ -225,7 +225,7 @@ class Empleados extends React.Component {
           <div className="d-flex justify-content-between align-items-center mb-3">
             <Input
               type="text"
-              placeholder="Buscar empleado"
+              placeholder="Buscar"
               value={this.state.searchText}
               onChange={this.handleSearch}
               style={{ width: '300px' }}
@@ -261,12 +261,12 @@ class Empleados extends React.Component {
                       <td>
                         <ButtonGroup>
                           <Button 
-                            color={elemento.estado ? "success" : "secondary"} 
+                            color={elemento.estado ? "secondary" : "success"} 
                             onClick={(e) => { e.stopPropagation(); this.cambiarEstado(elemento.id); }}
                             size="sm"
                             className="mr-1"
                           >
-                            {elemento.estado ? "On" : "Off"}
+                            {elemento.estado ? "off" : "On"}
                           </Button>
                           <Button 
                             color="dark" 
