@@ -1,8 +1,11 @@
-// Headquarters.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom'; // Importa useNavigate para la navegación
 import { FaTrash } from 'react-icons/fa'; // Importa el ícono de la caneca de basura
+import { Bar, Line } from 'react-chartjs-2'; // Importar los componentes Bar y Line para los gráficos
+import Chart from 'chart.js/auto'; // Importar el módulo Chart
+import { Container, Row, Col, Card } from 'reactstrap';
+
 
 // Estilos en línea para el componente
 const estilos = {
