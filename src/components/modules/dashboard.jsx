@@ -56,7 +56,7 @@ const Dashboard = () => {
     datasets: [
       {
         label: "Ejemplares por Sede",
-        data: [150, 200, 120],
+        data: [45, 33, 28 ],
         backgroundColor: ["#A0D6E1", "#F6C6A5", "#A87BC7"], // Azul Pastel, Naranja, Morado claro vibrante
         borderColor: "#4A90E2", // Azul Medio para bordes
         borderWidth: 1,
