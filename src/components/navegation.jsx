@@ -1,3 +1,4 @@
+// NavbarComp.jsx
 import React, { Component } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Container from 'react-bootstrap/Container';
@@ -6,6 +7,7 @@ import Navbar from 'react-bootstrap/Navbar';
 import { GiTreeBeehive } from "react-icons/gi";
 import { FaMoon, FaSun } from 'react-icons/fa';
 import { MdOutlineLogout } from "react-icons/md";
+import Swal from 'sweetalert2';
 
 import Profile from '../components/modules/profile';
 import Dashboard from '../components/modules/dashboard';
@@ -15,7 +17,7 @@ import Employees from '../components/modules/employees';
 import Clients from '../components/modules/clients';
 import Services from '../components/modules/services';
 import Headquarters from '../components/modules/headquarters';
-import Categoryofspecimens from '../components/modules/categoryofspecimens';
+import Specimens from '../components/modules/specimens'; // Importa Specimens
 import Tracking from '../components/modules/tracking';
 import Transfers from '../components/modules/transfers';
 import Records from '../components/modules/records';
@@ -34,6 +36,32 @@ export default class NavbarComp extends Component {
     this.setState(prevState => ({
       darkMode: !prevState.darkMode
     }));
+  };
+
+  // Función para manejar el cierre de sesión
+  handleLogout = () => {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: "¡No podrás volver a recuperar la sesión!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, cerrar sesión',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Aquí puedes agregar la lógica de cierre de sesión (e.g., limpiar tokens)
+        Swal.fire(
+          '¡Cerrar sesión!',
+          'Has cerrado sesión con éxito.',
+          'success'
+        ).then(() => {
+          // Redirige a la página principal después de cerrar sesión
+          window.location.href = '/';
+        });
+      }
+    });
   };
 
   render() {
@@ -69,16 +97,16 @@ export default class NavbarComp extends Component {
                 <Nav.Link as={Link} to="/Clients" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Clients</Nav.Link>
                 <Nav.Link as={Link} to="/Services" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Services</Nav.Link>
                 <Nav.Link as={Link} to="/Headquarters" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Headquarters</Nav.Link>
-                <Nav.Link as={Link} to="/Categoryofspecimens" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Specimens</Nav.Link>
+                <Nav.Link as={Link} to="/Specimens" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Specimens</Nav.Link>
                 <Nav.Link as={Link} to="/Tracking" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Tracking</Nav.Link>
                 <Nav.Link as={Link} to="/Transfers" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Transfers</Nav.Link>
                 <Nav.Link as={Link} to="/Records" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Records</Nav.Link>
-                <Nav.Link as={Link} to="/Logout" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>
-                Log out
+                <Nav.Link style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color} onClick={(e) => { e.preventDefault(); this.handleLogout(); }}>
+                  Log out
                   <MdOutlineLogout style={{ marginRight: '8px', fontSize: '1.75rem' }} />
                 </Nav.Link>
               </Nav>
-              
+
               <button 
                 style={{
                   backgroundColor: this.state.darkMode ? '#FFD700' : '#000',
@@ -108,16 +136,14 @@ export default class NavbarComp extends Component {
             <Route path='/Clients' element={<Clients />} />
             <Route path='/Services' element={<Services />} />
             <Route path='/Headquarters' element={<Headquarters />} />
-            <Route path='/Categoryofspecimens' element={<Categoryofspecimens />} />
+            <Route path='/Specimens' element={<Specimens />} /> {/* Asegúrate de que Specimens esté aquí */}
             <Route path='/Tracking' element={<Tracking />} />
             <Route path='/Transfers' element={<Transfers />} />
             <Route path='/Records' element={<Records />} />
             <Route path='/Logout' element={<Logout />} />
           </Routes>
         </div>
-        <p></p>
       </Router>
     );
   }
 }
-  
