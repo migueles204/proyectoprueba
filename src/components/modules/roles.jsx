@@ -215,7 +215,7 @@ class Roles extends Component {
 
   insertar = () => {
     try {
-      const { Rol, Description } = this.state.form;
+      const { Rol, Description, Permisos } = this.state.form;
   
       const regex = /^[A-Za-z][A-Za-z0-9\s]*$/;
       if (!regex.test(Rol)) {
@@ -271,7 +271,7 @@ class Roles extends Component {
       });
     }
   }
-
+  
   editar = () => {
     try {
       const { Rol, Description } = this.state.form;
@@ -301,10 +301,18 @@ class Roles extends Component {
         return;
       }
   
-      const lista = this.state.data.map((registro) =>
+      const rolExistente = this.state.data.find(
+        registro =>
+          registro.id !== this.state.form.id &&
+          registro.Rol.toLowerCase() === Rol.toLowerCase()
+      );
+      if (rolExistente) {
+        throw new Error("El rol ya existe. Por favor, ingrese un nombre de rol diferente.");
+      }
+  
+      const lista = this.state.data.map(registro =>
         registro.id === this.state.form.id ? this.state.form : registro
       );
-  
       this.setState({ data: lista, modalEditar: false });
       Swal.fire({
         position: "center",
@@ -327,7 +335,7 @@ class Roles extends Component {
       });
     }
   }
-
+  
   eliminar = (id) => {
     Swal.fire({
       title: '¿Estás seguro?',
@@ -368,15 +376,67 @@ class Roles extends Component {
   }  
 
   cambiarEstado = (id) => {
-    const lista = this.state.data.map((registro) => {
-      if (registro.id === id) {
-        registro.Estado = !registro.Estado;
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¡Esto cambiará el estado del rol!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      cancelButtonText: 'No, cancelar',
+      confirmButtonText: 'Sí, cambiar',
+      reverseButtons: true,
+      customClass: {
+        cancelButton: 'custom-swal',
+        confirmButton: 'custom-swal'
+      },
+      didOpen: (modal) => {
+        const icon = modal.querySelector('.swal2-icon.swal2-warning');
+        if (icon) {
+          icon.style.color = '#f1c40f';
+          icon.style.borderColor = '#f1c40f';
+        }
       }
-      return registro;
+    }).then((result) => {
+      if (result.isConfirmed) {
+        try {
+          // Realiza el cambio de estado aquí
+          const lista = this.state.data.map((registro) => {
+            if (registro.id === id) {
+              registro.Estado = !registro.Estado;
+            }
+            return registro;
+          });
+    
+          this.setState({ data: lista });
+    
+          // Muestra alerta de éxito
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: "Estado cambiado exitosamente",
+            showConfirmButton: false,
+            timer: 1500,
+            customClass: {
+              confirmButton: 'custom-swal'
+            }
+          });
+        } catch (error) {
+          // Muestra alerta de error si ocurre un problema
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Hubo un problema al cambiar el estado',
+            confirmButtonColor: '#d33',
+            customClass: {
+              confirmButton: 'custom-swal'
+            }
+          });
+        }
+      }
     });
-
-    this.setState({ data: lista });
-  }
+  };
+  
 
   seleccionarRol = (rol) => {
     if (this.state.selectedRole && JSON.stringify(this.state.selectedRole.Permisos) !== JSON.stringify(this.state.originalPermissions)) {
