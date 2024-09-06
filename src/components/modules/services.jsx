@@ -6,8 +6,6 @@ import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
-import { Bar } from 'react-chartjs-2'; // Importar el componente Bar para el gráfico
-import Chart from 'chart.js/auto'; // Importar el módulo Chart
 import alimentacion from '../../assets/alimentacion.jpeg';
 import pesebrera from '../../assets/pesebrera.jpg';
 import veterinaria from '../../assets/veterinaria.avif';
