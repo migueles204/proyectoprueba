@@ -3,7 +3,6 @@ import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom'; // Importa useNavigate para la navegación
 import { FaTrash, FaEdit } from 'react-icons/fa';
 
-
 // Estilos en línea para el componente
 const estilos = {
   headquarters: {
