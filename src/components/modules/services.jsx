@@ -6,9 +6,12 @@ import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
+import { Bar } from 'react-chartjs-2'; // Importar el componente Bar para el gráfico
+import Chart from 'chart.js/auto'; // Importar el módulo Chart
 import alimentacion from '../../assets/alimentacion.jpeg';
 import pesebrera from '../../assets/pesebrera.jpg';
 import veterinaria from '../../assets/veterinaria.avif';
+
 
 const initialServices = [
   { id: 1, nombre: "Servicio Pesebrera", descripcion: "Alojamiento del ejemplar", imagen: pesebrera, estado: false },
@@ -281,11 +284,63 @@ class Services extends React.Component {
   };  
 
   cambiarEstado = (id) => {
-    const lista = this.state.services.map((service) =>
-      service.id === id ? { ...service, estado: !service.estado } : service
-    );
-    this.setState({ services: lista });
-  };
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¡Esto cambiará el estado del servicio!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      cancelButtonText: 'No, cancelar',
+      confirmButtonText: 'Sí, cambiar',
+      reverseButtons: true,
+      customClass: {
+        cancelButton: 'custom-swal',
+        confirmButton: 'custom-swal'
+      },
+      didOpen: (modal) => {
+        const icon = modal.querySelector('.swal2-icon.swal2-warning');
+        if (icon) {
+          icon.style.color = '#f1c40f';
+          icon.style.borderColor = '#f1c40f';
+        }
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        try {
+          // Aquí iría el código que realiza el cambio de estado
+          const lista = this.state.services.map((service) =>
+            service.id === id ? { ...service, estado: !service.estado } : service
+          );
+          this.setState({ services: lista });
+  
+          // Mostrar alerta de éxito
+          Swal.fire({
+            position: 'center',
+            icon: 'success',
+            title: 'Estado cambiado exitosamente',
+            showConfirmButton: false,
+            timer: 1500,
+            customClass: {
+              confirmButton: 'custom-swal'
+            }
+          });
+        } catch (error) {
+          // Mostrar alerta de error si algo falla
+          Swal.fire({
+            title: 'Error',
+            text: 'Hubo un problema al cambiar el estado del servicio',
+            icon: 'error',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Aceptar',
+            customClass: {
+              confirmButton: 'custom-swal'
+            }
+          });
+        }
+      }
+    });
+  };  
 
   handleClickPage = (event, pageNumber) => {
     this.setState({ currentPage: pageNumber });

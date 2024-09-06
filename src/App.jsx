@@ -1,12 +1,12 @@
-import { useState } from 'react'//indica que va a importar a react
-import NavbarComp from './components/navegation'
+import { useState } from 'react'; // Importa React
+import NavbarComp from './components/navegation';
 
 function App() {
   return (
     <>
-     <NavbarComp/>
+      <NavbarComp />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
