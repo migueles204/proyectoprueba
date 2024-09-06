@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card } from 'reactstrap';
 import { Line, Bar } from 'react-chartjs-2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHorse, faUser } from '@fortawesome/free-solid-svg-icons';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import {
   Chart as ChartJS,

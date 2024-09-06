@@ -4,8 +4,6 @@ import { Table, Button, Container, Modal, ModalBody, ModalHeader, ModalFooter, F
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
-import { Bar } from 'react-chartjs-2'; // Importar el componente Bar para el gráfico
-import Chart from 'chart.js/auto'; // Importar el módulo Chart
 //npm install @fortawesome/react-fontawesome @fortawesome/free-solid-svg-icons sweetalert2
 
 // Datos iniciales de clientes

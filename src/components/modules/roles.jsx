@@ -12,7 +12,7 @@ const modules = [
   "Users", "Roles", "Employees", "Clients", "Services",
   "Venues", "Category of Specimens", "Transfers", "Records", "Dashboard"
 ];
-const permissions = ["Visualizar", "Crear", "Desactivar", "Editar", "Eliminar"];
+const permissions = ["Visualizar", "Crear", "Cambiar Estado", "Editar", "Eliminar"];
 
 const createInitialPermissions = () => {
   const initialPermissions = {};
@@ -20,7 +20,7 @@ const createInitialPermissions = () => {
     initialPermissions[mod] = {
       Visualizar: false,
       Crear: false,
-      Desactivar: false,
+      cambiarEstado: false,
       Editar: false,
       Eliminar: false,
     };
@@ -597,18 +597,20 @@ class Roles extends Component {
                       <td>{module}</td>
                       {permissions.map(permission => (
                         <td key={permission}>
-                          <Input
-                            type="checkbox"
-                            disabled={module === "Dashboard" && permission !== "Visualizar"}
-                            checked={selectedRole ? selectedRole.Permisos[module][permission] : false}
-                            onChange={() => selectedRole && this.handlePermissionChange(module, permission)}
-                            style={{
-                              border: '2px solid #333',
-                              borderRadius: '0.25rem',
-                              width: '16px',
-                              height: '16px'
-                            }}
-                          />
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <Input
+                              type="checkbox"
+                              disabled={module === "Dashboard" && permission !== "Visualizar"}
+                              checked={selectedRole ? selectedRole.Permisos[module][permission] : false}
+                              onChange={() => selectedRole && this.handlePermissionChange(module, permission)}
+                              style={{
+                                border: '2px solid #333',
+                                borderRadius: '0.25rem',
+                                width: '16px',
+                                height: '16px'
+                              }}
+                            />
+                          </div>
                         </td>
                       ))}
                     </tr>
