@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom'; // Importa useNavigate para la navegación
-import { FaTrash } from 'react-icons/fa'; // Importa el ícono de la caneca de basura
-import { Container, Row, Col, Card } from 'reactstrap';
-
+import { FaTrash, FaEdit } from 'react-icons/fa';//iconos editar y eliminar
 
 // Estilos en línea para el componente
 const estilos = {
