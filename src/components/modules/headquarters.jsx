@@ -111,8 +111,8 @@ const Tarjeta = ({ id, titulo, espaciosDisponibles, ejemplaresRegistrados, onEli
   const navigate = useNavigate(); // Hook para navegación
 
   const handleVerClick = () => {
-    navigate(`/Specimens?id=${id}`); // Navega a la vista Specimens con el ID
-  };
+    navigate(`/Specimens/${id}`);  // Asegúrate de que `id` sea un valor válido
+  };  
 
   const handleEliminarClick = async () => {
     const result = await Swal.fire({

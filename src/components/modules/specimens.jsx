@@ -1,6 +1,5 @@
-// Details.js
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useParams } from 'react-router-dom'; // Para obtener el ID de la URL
 
 const detallesEstilos = {
   container: {
@@ -28,17 +27,36 @@ const detallesEstilos = {
 };
 
 const Details = () => {
-  // Aquí podrías extraer datos relevantes de la URL o el estado
-  // Para simplificar, usaré datos estáticos en el ejemplo
-
+  const { id } = useParams(); // Obtenemos el ID de la URL
+  
+  // Lista estática de ejemplares para este ejemplo
   const ejemplares = [
     { id: 1, nombre: 'Ejemplar A', fechaLlegada: '2024-09-01' },
     { id: 2, nombre: 'Ejemplar B', fechaLlegada: '2024-08-15' },
   ];
 
+  // Buscar el ejemplar específico basado en el ID de la URL
+const ejemplarSeleccionado = ejemplares.find(ejemplar => ejemplar.id === parseInt(id, 10));
+
+const Specimens = () => {
+  const { id } = useParams();
+  // Lógica para obtener y mostrar los detalles del espécimen usando el id
+  return <div>Detalles del espécimen con ID: {id}</div>;
+};
+
+  // Si no se encuentra el ejemplar, mostrar un mensaje
+  if (!ejemplarSeleccionado) {
+    return (
+      <div style={detallesEstilos.container}>
+        <h1>Ejemplar no encontrado</h1>
+        <p>No hay datos disponibles para el ejemplar con ID: {id}</p>
+      </div>
+    );
+  }
+
   return (
     <div style={detallesEstilos.container}>
-      <h1>Detalles de Ejemplares</h1>
+      <h1>Detalles del Ejemplar {ejemplarSeleccionado.nombre}</h1>
       <table style={detallesEstilos.table}>
         <thead>
           <tr>
@@ -49,19 +67,17 @@ const Details = () => {
           </tr>
         </thead>
         <tbody>
-          {ejemplares.map(ejemplar => (
-            <tr key={ejemplar.id}>
-              <td style={detallesEstilos.td}>{ejemplar.id}</td>
-              <td style={detallesEstilos.td}>{ejemplar.nombre}</td>
-              <td style={detallesEstilos.td}>{ejemplar.fechaLlegada}</td>
-              <td style={detallesEstilos.td}>
-                <div style={detallesEstilos.actions}>
-                  <button>Editar</button>
-                  <button>Eliminar</button>
-                </div>
-              </td>
-            </tr>
-          ))}
+          <tr>
+            <td style={detallesEstilos.td}>{ejemplarSeleccionado.id}</td>
+            <td style={detallesEstilos.td}>{ejemplarSeleccionado.nombre}</td>
+            <td style={detallesEstilos.td}>{ejemplarSeleccionado.fechaLlegada}</td>
+            <td style={detallesEstilos.td}>
+              <div style={detallesEstilos.actions}>
+                <button>Editar</button>
+                <button>Eliminar</button>
+              </div>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
