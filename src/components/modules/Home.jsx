@@ -277,7 +277,7 @@ const HorseTrackingWithScheduler = () => {
             <i className="bi bi-calendar2-check" style={{ marginRight: '8px' }}></i>
             Mostrar Eventos Agendados
           </button>
-        </Col>
+        </Col>  
         <Col sm="4" className="text-center">
           <Button 
             onClick={toggleCreateObservationModal}
