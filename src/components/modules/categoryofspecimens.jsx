@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faEdit, faTrash, faEye } from '@fortawesome/free-solid-svg-icons';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import Pagination from '@mui/material/Pagination'; // Mantener solo esta si es la que necesitas
-
+ 
 const CategoryOfSpecimens = () => {
   const [categories, setCategories] = useState([]);
   const [exemplars, setExemplars] = useState([]);
