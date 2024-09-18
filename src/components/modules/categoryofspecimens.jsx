@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Button, Tooltip, Card, CardBody, CardTitle, CardText, FormGroup, Input, Label, Modal, ModalHeader, ModalBody, ModalFooter, PaginationItem, PaginationLink, Table, } from "reactstrap"; // Eliminamos Pagination de reactstrap
+import { Button, Tooltip, Card, CardBody, CardTitle, CardText, FormGroup, Input, Label, Modal, ModalHeader, ModalBody, ModalFooter, PaginationItem, PaginationLink, Table, } from "reactstrap";
 import { v4 as uuidv4 } from "uuid";
 import moment from "moment";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faEdit, faTrash, faEye } from '@fortawesome/free-solid-svg-icons';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import Pagination from '@mui/material/Pagination'; // Mantener solo esta si es la que necesitas
+import Pagination from '@mui/material/Pagination'; 
+import Swal from 'sweetalert2';
  
 const CategoryOfSpecimens = () => {
   const [categories, setCategories] = useState([]);
@@ -27,25 +28,33 @@ const CategoryOfSpecimens = () => {
   const [moveExemplarModalOpen, setMoveExemplarModalOpen] = useState(false);
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  const filteredCategories = categories.filter(category => {
+    // Filtramos solo las categorías que tienen ejemplares coincidentes con el término de búsqueda
+    const matchExemplar = category.ejemplares.some(exemplar => exemplar.nombre.toLowerCase().includes(searchTerm.toLowerCase()));
+    return matchExemplar;
+  });  
 
-  // Datos quemados
-const initialCategories = [
-  {
-    id: uuidv4(),
-    name: 'Competencia',
-    ejemplares: [
-      { id: uuidv4(), nombre: 'Atractivo', fechaNacimiento: '2023-02-14', paso: 'Trocha y galope', color: 'Negro', dueño: 'Carlos Pérez', cedula: '12345678', correo: 'carlos@gmail.com' },
-      { id: uuidv4(), nombre: 'Estrella', fechaNacimiento: '2022-06-21', paso: 'P3', color: 'Café', dueño: 'Ana García', cedula: '87654321', correo: 'ana@gmail.com' }
-    ]
-  },
-  {
-    id: uuidv4(),
-    name: 'Potrancas',
-    ejemplares: [
-      { id: uuidv4(), nombre: 'Barbie', fechaNacimiento: '2021-12-05', paso: 'Trocha', color: 'Isabela', dueño: 'Miguel Ruiz', cedula: '10293847', correo: 'miguel@gmail.com' }
-    ]
-  }
-];
+ // Cargar datos quemados solo una vez cuando el componente se monta
+ useEffect(() => {
+  const initialCategories = [
+    {
+      id: uuidv4(),
+      name: 'Competencia',
+      ejemplares: [
+        { id: uuidv4(), nombre: 'Atractivo', fechaNacimiento: '2023-02-14', paso: 'Trocha y galope', color: 'Negro', dueño: 'Carlos Pérez', cedula: '12345678', correo: 'carlos@gmail.com', edad: calculateAgeInMonths('2023-02-14') },
+        { id: uuidv4(), nombre: 'Estrella', fechaNacimiento: '2022-06-21', paso: 'P3', color: 'Café', dueño: 'Ana García', cedula: '87654321', correo: 'ana@gmail.com', edad: calculateAgeInMonths('2022-06-21') }      ]
+    },
+    {
+      id: uuidv4(),
+      name: 'Potrancas',
+      ejemplares: [
+        { id: uuidv4(), nombre: 'Barbie', fechaNacimiento: '2021-12-05', paso: 'Trocha', color: 'Isabela', dueño: 'Miguel Ruiz', cedula: '10293847', correo: 'miguel@gmail.com', edad: calculateAgeInMonths('2021-12-05') }      ]
+    }
+  ];
+
+  setCategories(initialCategories);
+}, []);
 
   const calculateAgeInMonths = (birthDate) => {
     return moment().diff(moment(birthDate), 'months');
@@ -60,67 +69,365 @@ const initialCategories = [
   };
 
   const addCategory = () => {
-    if (newCategoryName.trim()) {
-      const newCategory = { id: uuidv4(), name: newCategoryName, ejemplares: [] };
-      setCategories([...categories, newCategory]);
+    try {
+      if (newCategoryName.trim() === '') {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "Por favor, ingrese el nombre de la categoría.",
+          customClass: {
+            confirmButton: 'custom-swal'
+          }
+        });
+        return;
+      }
+
+      // Validar que el nombre de la categoría cumple con la expresión regular
+      const regex = /^[A-Za-z][A-Za-z0-9\s]*$/;
+      if (!regex.test(newCategoryName)) {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "El nombre de la categoría no puede comenzar con un número ni contener caracteres especiales.",
+          customClass: {
+            confirmButton: 'custom-swal'
+          }
+        });
+        return;
+      }
+
+      // Verificar si la categoría ya existe
+      const categoryExistente = categories.find(cat => cat.name.toLowerCase() === newCategoryName.toLowerCase());
+      if (categoryExistente) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "La categoría ya existe. Por favor, ingrese un nombre de categoría diferente.",
+          customClass: {
+            confirmButton: 'custom-swal'
+          }
+        });
+        return;
+      }
+
+      // Si todas las validaciones pasan, añadir la nueva categoría
+      const nuevaCategoria = { id: uuidv4(), name: newCategoryName, ejemplares: [] };
+      setCategories([...categories, nuevaCategoria]);
       setAddCategoryModalOpen(false);
       setNewCategoryName('');
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Categoría agregada exitosamente",
+        showConfirmButton: false,
+        timer: 1500,
+        customClass: {
+          confirmButton: 'custom-swal'
+        }
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: `Error al añadir la categoría: ${error.message}`,
+        customClass: {
+          confirmButton: 'custom-swal'
+        }
+      });
     }
   };
 
   const updateCategory = () => {
     if (editCategory) {
-      setCategories(categories.map(cat =>
-        cat.id === editCategory.id ? { ...cat, name: editCategory.name } : cat
-      ));
-      setEditCategoryModalOpen(false);
-      setEditCategory(null);
+      try {
+        const { name, id } = editCategory;
+
+        if (name.trim() === '') {
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Por favor, ingrese el nombre de la categoría.",
+            customClass: {
+              confirmButton: 'custom-swal'
+            }
+          });
+          return;
+        }
+
+        const regex = /^[A-Za-z][A-Za-z0-9\s]*$/;
+        if (!regex.test(name)) {
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "El nombre de la categoría no puede comenzar con un número ni contener caracteres especiales.",
+            customClass: {
+              confirmButton: 'custom-swal'
+            }
+          });
+          return;
+        }
+
+        const categoryExistente = categories.find(cat => cat.id !== id && cat.name.toLowerCase() === name.toLowerCase());
+        if (categoryExistente) {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "La categoría ya existe. Por favor, ingrese un nombre de categoría diferente.",
+            customClass: {
+              confirmButton: 'custom-swal'
+            }
+          });
+          return;
+        }
+
+        setCategories(categories.map(cat =>
+          cat.id === id ? { ...cat, name } : cat
+        ));
+        setEditCategoryModalOpen(false);
+        setEditCategory(null);
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: "Categoría actualizada exitosamente",
+          showConfirmButton: false,
+          timer: 1500,
+          customClass: {
+            confirmButton: 'custom-swal'
+          }
+        });
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: `Error al actualizar la categoría: ${error.message}`,
+          customClass: {
+            confirmButton: 'custom-swal'
+          }
+        });
+      }
     }
   };
 
-  const addExemplarToCategory = () => {
-    if (selectedCategoryId && newExemplar.nombre.trim()) {
-      const calculatedAge = calculateAgeInMonths(newExemplar.fechaNacimiento);
-      const newExemplarData = { id: uuidv4(), ...newExemplar, edad: calculatedAge, categoriaId: selectedCategoryId };
-      setCategories(categories.map(cat =>
-        cat.id === selectedCategoryId
-          ? { ...cat, ejemplares: [...cat.ejemplares, newExemplarData] }
-          : cat
-      ));
-      setExemplars([...exemplars, newExemplarData]);
-      setAddExemplarModalOpen(false);
-      setNewExemplar({nombre: '', fechaNacimiento: '', edad: '', paso: '', color: '', dueño: '', cedula: '', correo: '',});}};
+// Función para agregar ejemplar a una categoría con validaciones
+const addExemplarToCategory = () => {
+  const { nombre, fechaNacimiento, paso, color, dueño, cedula, correo } = newExemplar;
 
- // Función para abrir el modal de edición y rellenar los datos actuales
- const openEditExemplarModal = (exemplar) => {
-  setSelectedExemplar({...exemplar}); // Copia el ejemplar seleccionado al estado
-  setEditExemplarModalOpen(true);
-};
-
-const updateExemplar = () => {
-  if (selectedExemplar) {
-    // Actualizar el ejemplar en la lista de ejemplares
-    const updatedExemplars = exemplars.map(ex =>
-      ex.id === selectedExemplar.id ? { ...selectedExemplar } : ex
-    );
-    setExemplars(updatedExemplars);
-
-    // Actualizar el ejemplar en la categoría correspondiente
-    setCategories(categories.map(cat => ({
-      ...cat,
-      ejemplares: cat.ejemplares.map(ex =>
-        ex.id === selectedExemplar.id ? { ...selectedExemplar } : ex
-      )
-    })));
-
-    setEditExemplarModalOpen(false);
-    setSelectedExemplar(null);
+  // Validar que todos los campos estén llenos
+  if (!selectedCategoryId || !nombre.trim() || !fechaNacimiento.trim() || !paso.trim() || !color.trim() || !dueño.trim() || !cedula.trim() || !correo.trim()) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Por favor, ingrese todos los campos.',
+      customClass: {
+        confirmButton: 'custom-swal'
+      }
+    });
+    return;
   }
+
+  // Validar que el nombre no comience con un número ni contenga caracteres especiales
+  const nameRegex = /^[A-Za-z][A-Za-z0-9\s]*$/;
+  if (!nameRegex.test(nombre)) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'El nombre del ejemplar no puede comenzar con un número ni contener caracteres especiales.',
+      customClass: {
+        confirmButton: 'custom-swal'
+      }
+    });
+    return;
+  }
+
+  // Validar que la fecha de nacimiento sea una fecha válida
+  if (!moment(fechaNacimiento, 'YYYY-MM-DD', true).isValid()) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'La fecha de nacimiento no es válida. Use el formato AAAA-MM-DD.',
+      customClass: {
+        confirmButton: 'custom-swal'
+      }
+    });
+    return;
+  }
+
+  // Verificar si el ejemplar ya existe en la categoría
+  const existingExemplar = categories.find(cat => cat.id === selectedCategoryId)?.ejemplares.some(ex => ex.nombre.toLowerCase() === nombre.toLowerCase());
+  if (existingExemplar) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'El ejemplar ya existe en la categoría. Por favor, ingrese un ejemplar diferente.',
+      customClass: {
+        confirmButton: 'custom-swal'
+      }
+    });
+    return;
+  }
+
+  // Si todas las validaciones pasan, añadir el nuevo ejemplar
+  const calculatedAge = calculateAgeInMonths(fechaNacimiento);
+  const newExemplarData = { id: uuidv4(), ...newExemplar, edad: calculatedAge, categoriaId: selectedCategoryId };
+  setCategories(categories.map(cat =>
+    cat.id === selectedCategoryId
+      ? { ...cat, ejemplares: [...cat.ejemplares, newExemplarData] }
+      : cat
+  ));
+  setExemplars([...exemplars, newExemplarData]);
+  setAddExemplarModalOpen(false);
+  setNewExemplar({ nombre: '', fechaNacimiento: '', edad: '', paso: '', color: '', dueño: '', cedula: '', correo: '' });
 };
 
-  const deleteCategory = (id) => {
-    setCategories(categories.filter(cat => cat.id !== id));
-  };
+// Función para actualizar un ejemplar con validaciones
+const updateExemplar = () => {
+  const { nombre, fechaNacimiento, paso, color, dueño, cedula, correo } = selectedExemplar;
+
+  if (!selectedExemplar) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'No se ha seleccionado ningún ejemplar para editar.',
+      customClass: {
+        confirmButton: 'custom-swal'
+      }
+    });
+    return;
+  }
+
+  // Validar que todos los campos estén llenos
+  if (!nombre.trim() || !fechaNacimiento.trim() || !paso.trim() || !color.trim() || !dueño.trim() || !cedula.trim() || !correo.trim()) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Por favor, ingrese todos los campos.',
+      customClass: {
+        confirmButton: 'custom-swal'
+      }
+    });
+    return;
+  }
+
+  // Validar que el nombre no comience con un número ni contenga caracteres especiales
+  const nameRegex = /^[A-Za-z][A-Za-z0-9\s]*$/;
+  if (!nameRegex.test(nombre)) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'El nombre del ejemplar no puede comenzar con un número ni contener caracteres especiales.',
+      customClass: {
+        confirmButton: 'custom-swal'
+      }
+    });
+    return;
+  }
+
+  // Validar que la fecha de nacimiento sea una fecha válida
+  if (!moment(fechaNacimiento, 'YYYY-MM-DD', true).isValid()) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'La fecha de nacimiento no es válida. Use el formato AAAA-MM-DD.',
+      customClass: {
+        confirmButton: 'custom-swal'
+      }
+    });
+    return;
+  }
+
+  // Verificar si el ejemplar ya existe en la categoría con un nombre diferente
+  const existingExemplarInCategory = categories.find(cat => 
+    cat.ejemplares.some(ex => ex.nombre.toLowerCase() === nombre.toLowerCase() && ex.id !== selectedExemplar.id)
+  );
+  if (existingExemplarInCategory) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Ya existe un ejemplar con el mismo nombre en la categoría. Por favor, use un nombre diferente.',
+      customClass: {
+        confirmButton: 'custom-swal'
+      }
+    });
+    return;
+  }
+
+  // Si todas las validaciones pasan, actualizar el ejemplar
+  const updatedExemplars = exemplars.map(ex =>
+    ex.id === selectedExemplar.id ? { ...selectedExemplar } : ex
+  );
+  setExemplars(updatedExemplars);
+
+  // Actualizar el ejemplar en la categoría correspondiente
+  setCategories(categories.map(cat => ({
+    ...cat,
+    ejemplares: cat.ejemplares.map(ex =>
+      ex.id === selectedExemplar.id ? { ...selectedExemplar } : ex
+    )
+  })));
+
+  setEditExemplarModalOpen(false);
+  setSelectedExemplar(null);
+};
+
+ // Función para eliminar categoría con validación y confirmación
+const deleteCategory = (id) => {
+  // Encontrar la categoría a eliminar
+  const categoryToDelete = categories.find(cat => cat.id === id);
+
+  // Verificar si la categoría tiene ejemplares
+  if (categoryToDelete && categoryToDelete.ejemplares.length > 0) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'No se puede eliminar la categoría porque contiene ejemplares. Primero elimina los ejemplares.',
+      customClass: {
+        confirmButton: 'custom-swal'
+      }
+    });
+    return;
+  }
+
+  // Mostrar alerta de confirmación para eliminar la categoría
+  Swal.fire({
+    title: '¿Estás seguro?',
+    text: '¡No podrás revertir esto!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    cancelButtonText: 'No, cancelar',
+    confirmButtonText: 'Sí, eliminar',
+    reverseButtons: true,
+    customClass: {
+      cancelButton: 'custom-swal',
+      confirmButton: 'custom-swal'
+    },
+    didOpen: (modal) => {
+      const icon = modal.querySelector('.swal2-icon.swal2-warning');
+      if (icon) {
+        icon.style.color = '#f1c40f';
+        icon.style.borderColor = '#f1c40f';
+      }
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Filtrar las categorías para eliminar la seleccionada
+      const updatedCategories = categories.filter(cat => cat.id !== id);
+      setCategories(updatedCategories);
+
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Categoría eliminada exitosamente",
+        showConfirmButton: false,
+        timer: 1500,
+        customClass: {
+          confirmButton: 'custom-swal'
+        }
+      });
+    }
+  });
+};
 
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -132,75 +439,141 @@ const updateExemplar = () => {
   };
 
   const moveExemplarToCategory = () => {
-    if (targetCategoryId && exemplarToMove) {
-      // Verificar si el ejemplar ya está en la categoría de destino
-      if (exemplarToMove.categoriaId === targetCategoryId) {
-        alert('El ejemplar ya está en la categoría seleccionada.');
-        return;
-      }
-  
-      // Remover el ejemplar de todas las categorías
-      const updatedCategories = categories.map(cat => ({
-        ...cat,
-        ejemplares: cat.ejemplares.filter(ex => ex.id !== exemplarToMove.id)
-      }));
-  
-      // Actualizar el ejemplar con la nueva categoría
-      const updatedExemplar = { ...exemplarToMove, categoriaId: targetCategoryId };
-  
-      // Añadir el ejemplar a la nueva categoría
-      const newCategories = updatedCategories.map(cat =>
-        cat.id === targetCategoryId
-          ? { ...cat, ejemplares: [...cat.ejemplares, updatedExemplar] }
-          : cat
-      );
-  
-      // Actualizar el estado de las categorías y ejemplares
-      setCategories(newCategories);
-  
-      // Actualizar la lista global de ejemplares con la nueva categoría asignada
-      const updatedExemplars = exemplars.map(ex => 
-        ex.id === exemplarToMove.id ? updatedExemplar : ex
-      );
-      setExemplars(updatedExemplars);
-  
-      // Cerrar el modal y resetear los estados
-      setMoveExemplarModalOpen(false);
-      setExemplarToMove(null);
-      setTargetCategoryId(null);
+    if (!exemplarToMove || !targetCategoryId) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'Por favor, seleccione un ejemplar y una categoría de destino.',
+        customClass: {
+          confirmButton: 'custom-swal'
+        }
+      });
+      return;
     }
+  
+    // Verificar si el ejemplar ya está en la categoría de destino
+    if (exemplarToMove.categoriaId === targetCategoryId) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Información',
+        text: 'El ejemplar ya está en la categoría seleccionada.',
+        customClass: {
+          confirmButton: 'custom-swal'
+        }
+      });
+      return;
+    }
+  
+    // Verificar si el ejemplar ya existe en la categoría de destino
+    const targetCategory = categories.find(cat => cat.id === targetCategoryId);
+    if (targetCategory && targetCategory.ejemplares.find(ex => ex.id === exemplarToMove.id)) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Información',
+        text: 'El ejemplar ya existe en la categoría seleccionada.',
+        customClass: {
+          confirmButton: 'custom-swal'
+        }
+      });
+      return;
+    }
+  
+    // Remover el ejemplar de todas las categorías
+    const updatedCategories = categories.map(cat => ({
+      ...cat,
+      ejemplares: cat.ejemplares.filter(ex => ex.id !== exemplarToMove.id)
+    }));
+  
+    // Actualizar el ejemplar con la nueva categoría
+    const updatedExemplar = { ...exemplarToMove, categoriaId: targetCategoryId };
+  
+    // Añadir el ejemplar a la nueva categoría
+    const newCategories = updatedCategories.map(cat =>
+      cat.id === targetCategoryId
+        ? { ...cat, ejemplares: [...cat.ejemplares, updatedExemplar] }
+        : cat
+    );
+  
+    // Actualizar el estado de las categorías y ejemplares
+    setCategories(newCategories);
+  
+    // Actualizar la lista global de ejemplares con la nueva categoría asignada
+    const updatedExemplars = exemplars.map(ex => 
+      ex.id === exemplarToMove.id ? updatedExemplar : ex
+    );
+    setExemplars(updatedExemplars);
+  
+    // Cerrar el modal y resetear los estados
+    setMoveExemplarModalOpen(false);
+    setExemplarToMove(null);
+    setTargetCategoryId(null);
+  
+    Swal.fire({
+      position: 'center',
+      icon: 'success',
+      title: 'Ejemplar movido exitosamente',
+      showConfirmButton: false,
+      timer: 1500,
+      customClass: {
+        confirmButton: 'custom-swal'
+      }
+    });
   };  
 
-  const filteredCategories = categories.filter(category => {
-    const matchCategoryName = category.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchExemplar = category.ejemplares.some(exemplar => exemplar.nombre.toLowerCase().includes(searchTerm.toLowerCase()));
-    return matchCategoryName || matchExemplar;
-  });
-
-  useEffect(() => {
-    console.log('Categories:', categories);
-    console.log('Exemplars:', exemplars);
-    setCategories(initialCategories);
-  }, [categories, exemplars]);
+useEffect(() => {
+  console.log('Categories:', categories);
+  console.log('Exemplars:', exemplars);
+}, []); // Elimina las dependencias
 
   return (
     <div className="container mt-5">
-      <div className="d-flex justify-content-between mb-3">
-        <Button color="success" onClick={() => setAddCategoryModalOpen(true)}>
-          Crear Categoría
-        </Button>
-      </div>
+    <div className="d-flex justify-content-between mb-3">
+      {/* Botón Crear Categoría */}
+      <Button color="success" onClick={() => setAddCategoryModalOpen(true)}>
+        Crear Categoría
+      </Button>
+  
+      {/* Campo de búsqueda */}
+      <input
+        type="text"
+        placeholder="Buscar por ejemplar"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="form-control rounded"  // Bordes redondeados en las esquinas
+        style={{ maxWidth: '500px', width: '100%' }}  // Ancho ajustado
+      />
+    </div>
+    
+{/* Renderizar categorías y ejemplares filtrados */}
+{searchTerm && filteredCategories.length > 0 ? (
+        filteredCategories.map(category => {
+          // Filtramos los ejemplares de la categoría que coinciden con el término de búsqueda
+          const matchingExemplars = category.ejemplares.filter(exemplar =>
+            exemplar.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+          );
 
-      <div className="col-md-6 mb-3">
-        <Input
-          type="text"
-          placeholder="Buscar por categoría o ejemplar"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ marginBottom: '20px' }}
-        />
-      </div>
-
+          return (
+            <div key={category.id} className="card mb-3">
+              <div className="card-body">
+                <h5 className="card-title">{category.name}</h5>
+                {/* Si hay ejemplares que coinciden, los mostramos en una línea separada por guiones */}
+                {matchingExemplars.length > 0 && (
+                  <ul className="list-group list-group-flush">
+                    {matchingExemplars.map(exemplar => (
+                      <li key={exemplar.id} className="list-group-item">
+                        {`${exemplar.nombre}  ${exemplar.edad} `}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          );
+        })
+      ) : searchTerm && filteredCategories.length === 0 ? (
+        <p>No se encontraron resultados</p>
+      ) : null}
+      
       <div className="row">
         {getCategoriesOnPage().map((category) => (
           <div key={category.id} className="col-md-6 mb-4">
@@ -253,6 +626,7 @@ const updateExemplar = () => {
                   <thead>
                     <tr>
                       <th>Nombre</th>
+                      <th>Edad (Meses)</th>
                       <th>Fecha de Nacimiento</th>
                       <th>Acciones</th>
                     </tr>
@@ -261,11 +635,11 @@ const updateExemplar = () => {
                     {category.ejemplares.map((exemplar) => (
                       <tr key={exemplar.id}>
                         <td>{exemplar.nombre}</td>
+                        <td>{exemplar.edad}</td>
                         <td>{exemplar.fechaNacimiento}</td>
                         <td>
                         <Button
                           outline
-                          id={`addExemplarButton-${exemplar.id}`} // Asegúrate de que el id sea único para cada botón
                           style={{
                             color: 'info',
                             marginLeft: '0.5rem',
@@ -278,17 +652,7 @@ const updateExemplar = () => {
                         >
                           <FontAwesomeIcon icon={faEye} style={{ color: '#4a90e2', fontSize: '1.2rem' }} /> {/* Azul marino oscuro */}
                         </Button>
-
-                        <Tooltip
-                          placement="top"
-                          isOpen={tooltipOpen}
-                          target={`addExemplarButton-${exemplar.id}`} // Vincula el tooltip con el botón específico
-                          toggle={() => setTooltipOpen(!tooltipOpen)}
-                        >
-                          Ver datos del ejemplar
-                        </Tooltip>
                         <Button
-                          id={`addExemplarButton-${category.id}`} // Asigna un id único al botón para el Tooltip
                           style={{
                             marginLeft: '0.5rem',
                             backgroundColor: 'transparent', // Elimina el fondo
@@ -303,14 +667,6 @@ const updateExemplar = () => {
                         >
                           <i className="bi bi-arrow-left-right" style={{ color: '#28a745', fontSize: '1.2rem' }}></i> {/* Icono de mover y color verde */}
                         </Button>
-                        <Tooltip
-                          placement="top"
-                          isOpen={tooltipOpen}
-                          target={`addExemplarButton-${category.id}`} // Referencia al botón específico
-                          toggle={() => setTooltipOpen(!tooltipOpen)}
-                        >
-                          Mover ejemplar de carpeta
-                        </Tooltip>
                         <Button
                           style={{
                             marginLeft: '0.5rem',
@@ -319,7 +675,7 @@ const updateExemplar = () => {
                           }}
                           size="sm"
                           className="mr-2 p-0"
-                          onClick={() => openEditExemplarModal(exemplar)}
+                          onClick={() => editExemplarModalOpen(exemplar)}
                         >
                           <FontAwesomeIcon icon={faEdit} style={{ color: 'black', fontSize: '1.2rem' }} /> {/* Ícono edit en negro */}
                         </Button>
@@ -334,17 +690,28 @@ const updateExemplar = () => {
         ))}
       </div>
 
-      <Pagination>
-        {[...Array(totalPages).keys()].map(number => (
-          <PaginationItem key={number + 1} active={number + 1 === currentPage}>
-            <PaginationLink
-              onClick={() => paginate(number + 1)}
-            >
-              {number + 1}
-            </PaginationLink>
-          </PaginationItem>
-        ))}
-      </Pagination>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '60px', // Ajusta el mínimo alto si es necesario
+          marginTop: '20px', // Margen superior para separar del contenido
+          marginBottom: '20px', // Margen inferior para separar del contenido
+        }}
+      >
+        <Pagination>
+          {[...Array(totalPages).keys()].map(number => (
+            <PaginationItem key={number + 1} active={number + 1 === currentPage}>
+              <PaginationLink
+                onClick={() => paginate(number + 1)}
+              >
+                {number + 1}
+              </PaginationLink>
+            </PaginationItem>
+          ))}
+        </Pagination>
+      </div>
 
       {/* Modals */}
       <Modal isOpen={addCategoryModalOpen} toggle={() => setAddCategoryModalOpen(!addCategoryModalOpen)}>
@@ -623,5 +990,6 @@ const updateExemplar = () => {
     </div>
   );
 };
+
 
 export default CategoryOfSpecimens;
