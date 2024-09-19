@@ -365,6 +365,16 @@ const updateExemplar = () => {
     )
   })));
 
+  // Mostrar alerta de éxito
+  Swal.fire({
+    icon: 'success',
+    title: 'Actualización exitosa',
+    text: 'Los datos del ejemplar se ha actualizado correctamente.',
+    customClass: {
+      confirmButton: 'custom-swal'
+    }
+  });
+
   setEditExemplarModalOpen(false);
   setSelectedExemplar(null);
 };
@@ -375,11 +385,11 @@ const deleteCategory = (id) => {
   const categoryToDelete = categories.find(cat => cat.id === id);
 
   // Verificar si la categoría tiene ejemplares
-  if (categoryToDelete && categoryToDelete.ejemplares.length > 0) {
+  if (categoryToDelete && categoryToDelete.ejemplares.length > 0) { 
     Swal.fire({
       icon: 'error',
       title: 'Error',
-      text: 'No se puede eliminar la categoría porque contiene ejemplares. Primero elimina los ejemplares.',
+      text: 'No se puede eliminar la categoría porque contiene ejemplares.',
       customClass: {
         confirmButton: 'custom-swal'
       }
@@ -520,10 +530,10 @@ const deleteCategory = (id) => {
     });
   };  
 
-useEffect(() => {
-  console.log('Categories:', categories);
-  console.log('Exemplars:', exemplars);
-}, []); // Elimina las dependencias
+  useEffect(() => {
+    console.log('Categories:', categories);
+    console.log('Exemplars:', exemplars);
+  }, [categories, exemplars]);  
 
   return (
     <div className="container mt-5">
@@ -670,14 +680,17 @@ useEffect(() => {
                         <Button
                           style={{
                             marginLeft: '0.5rem',
-                            backgroundColor: 'transparent', // Elimina el fondo
-                            border: 'none' // Elimina el borde del botón
+                            backgroundColor: 'transparent',
+                            border: 'none'
                           }}
                           size="sm"
                           className="mr-2 p-0"
-                          onClick={() => editExemplarModalOpen(exemplar)}
+                          onClick={() => {
+                            setSelectedExemplar(exemplar); // Establecer el ejemplar seleccionado
+                            setEditExemplarModalOpen(true); // Abrir el modal
+                          }}
                         >
-                          <FontAwesomeIcon icon={faEdit} style={{ color: 'black', fontSize: '1.2rem' }} /> {/* Ícono edit en negro */}
+                          <FontAwesomeIcon icon={faEdit} style={{ color: 'black', fontSize: '1.2rem' }} />
                         </Button>
                         </td>
                       </tr>

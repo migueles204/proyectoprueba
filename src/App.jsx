@@ -45,7 +45,6 @@ function App() {
     flex: '1',
     backgroundImage: `url(${miImagen})`,
     backgroundSize: 'cover',
-    backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
     height: '100%',
     width: '100%',
