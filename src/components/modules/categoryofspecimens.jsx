@@ -385,7 +385,7 @@ const deleteCategory = (id) => {
   const categoryToDelete = categories.find(cat => cat.id === id);
 
   // Verificar si la categoría tiene ejemplares
-  if (categoryToDelete && categoryToDelete.ejemplares.length > 0) {
+  if (categoryToDelete && categoryToDelete.ejemplares.length > 0) { 
     Swal.fire({
       icon: 'error',
       title: 'Error',
