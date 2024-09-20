@@ -13,6 +13,13 @@ const initialServices = [
     { id: 2, nombre: "Normal", descripcion: "Alimentación al ejemplar las veces son correspondidas", valor: "30 USD", estado: true },
     { id: 3, nombre: "Premium", descripcion: "Cuidado médico al ejemplar las veces que así lo requiera", valor: "80 USD", estado: true }
 ];
+const predefinedOptions = [
+    { id: 1, name: "Opción 1" },
+    { id: 2, name: "Opción 2" },
+    { id: 3, name: "Opción 3" },
+    { id: 4, name: "Opción 4" },
+];
+
 
 class Packages extends React.Component {
     state = {
@@ -26,6 +33,8 @@ class Packages extends React.Component {
             valor: '',
             estado: true,
             selectedServices: [],
+            selectedOption: '', // Para manejar la opción seleccionada
+            customService: '',  // Para manejar el texto de entrada personalizado
         },
         modalAñadir: false,
         modalEditar: false,
@@ -72,10 +81,40 @@ class Packages extends React.Component {
             }
         });
     };
+    handleSelectOption = (e) => {
+        const value = e.target.value;
+        this.setState(prevState => ({
+            form: {
+                ...prevState.form,
+                selectedOption: value,
+                customService: value === 'custom' ? '' : prevState.form.customService // Limpiar si no es "custom"
+            }
+        }));
+    };
+
+    handleCustomServiceChange = (e) => {
+        this.setState(prevState => ({
+            form: {
+                ...prevState.form,
+                customService: e.target.value
+            }
+        }));
+    };
 
     añadirServicio = () => {
         try {
-            const { nombre, descripcion, valor, selectedServices } = this.state.form;
+            const { nombre, descripcion, valor, selectedServices, selectedOption, customService } = this.state.form;
+            if (selectedOption === 'custom' && customService.trim() === '') {
+                Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: "Por favor, ingrese un nombre de servicio personalizado.",
+                    customClass: {
+                        confirmButton: 'custom-swal'
+                    }
+                });
+                return;
+            }
 
             if (nombre.trim() === '' || descripcion.trim() === '' || valor.trim() === '') {
                 Swal.fire({
@@ -131,7 +170,8 @@ class Packages extends React.Component {
                 ...this.state.form,
                 id: this.state.services.length + 1,
                 descripcion: descripcion.split('\n'),
-                selectedServices: selectedServices.map(id => this.state.allServices.find(service => service.id === id))
+                selectedServices: selectedServices.map(id => this.state.allServices.find(service => service.id === id)),
+                nombre: selectedOption === 'custom' ? customService : selectedOption // Usar el nombre personalizado si se selecciona "custom"
             };
             const lista = [...this.state.services, nuevoServicio];
             this.setState({ services: lista, modalAñadir: false });
@@ -376,13 +416,12 @@ class Packages extends React.Component {
 
     handleView = (id) => {
         const { navigate } = this.props; // Utilizamos navigate del props
-        navigate(`/Specimens/${id}`); 
+        navigate(`/DetailsP/${id}`); 
     };
 
     render() {
         const { modalAñadir, modalEditar, searchTerm, currentPage, servicesPerPage } = this.state;
         const totalPages = Math.ceil(this.state.services.length / servicesPerPage);
-
         return (
             <Container>
                 <div className="d-flex justify-content-between align-items-center mt-3">
@@ -441,6 +480,31 @@ class Packages extends React.Component {
                                     onChange={this.handleChange}
                                 />
                             </FormGroup>
+                            <FormGroup>
+                                <Input
+                                    type="select"
+                                    name="selectedOption"
+                                    value={this.state.form.selectedOption}
+                                    onChange={this.handleSelectOption}
+                                >
+                                    <option value="">Seleccione una opción</option>
+                                    {predefinedOptions.map(option => (
+                                        <option key={option.id} value={option.name}>{option.name}</option>
+                                    ))}
+                                    <option value="custom">Añadir opción personalizada</option>
+                                </Input>
+                            </FormGroup>
+                            {this.state.form.selectedOption === 'custom' && (
+                                <FormGroup>
+                                    <Input
+                                        type="text"
+                                        name="customService"
+                                        placeholder="Ingrese el nombre del servicio"
+                                        value={this.state.form.customService}
+                                        onChange={this.handleCustomServiceChange}
+                                    />
+                                </FormGroup>
+                            )}
                             <FormGroup>
                                 <Input
                                     type="checkbox"

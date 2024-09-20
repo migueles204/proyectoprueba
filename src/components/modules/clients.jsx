@@ -1,16 +1,22 @@
 import React from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Table, Button, Container, Modal, ModalBody, ModalHeader, ModalFooter, FormGroup, Input } from 'reactstrap';
+import { Table, Button, Container, Modal, ModalBody, ModalHeader, ModalFooter, FormGroup, Input, ButtonGroup } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
-//npm install @fortawesome/react-fontawesome @fortawesome/free-solid-svg-icons sweetalert2
 
-// Datos iniciales de clientes
+// Datos iniciales de clientes con estado de activación
 const data = [
-  { id: 1, Nombre: "Carolina Guzman", Document: 16514416, Correo: "guzman@gmail.com", Celular: "3546549", Nejemplares: 5 },
-  { id: 2, Nombre: "Andra Torres", Document: 18761919, Correo: "torres@gmail.com", Celular: "3546549", Nejemplares: 2 },
-  { id: 3, Nombre: "Natalia Muriel", Document: 1016177143, Correo: "muriel@gmail.com", Celular: "3546549", Nejemplares: 1 }
+  { id: 1, Nombre: "Carolina Guzman", TypeDocument: "Pasaporte", Document: 16514416, Correo: "guzman@gmail.com", Celular: "3546549", Nejemplares: 5, estado: true },
+  { id: 2, Nombre: "Andra Torres", TypeDocument: "Cedula de Ciudadania", Document: 18761919, Correo: "torres@gmail.com", Celular: "3546549", Nejemplares: 2, estado: false },
+  { id: 3, Nombre: "Natalia Muriel", TypeDocument: "Cedula de Extranjeria", Document: 1016177143, Correo: "muriel@gmail.com", Celular: "3546549", Nejemplares: 1, estado: true }
+];
+
+// Lista de tipos de documentos
+const tiposDocumento = [
+  'Cedula de Ciudadania',
+  'Cedula de Extranjeria',
+  'Pasaporte'
 ];
 
 class Clientes extends React.Component {
@@ -20,10 +26,12 @@ class Clientes extends React.Component {
     form: {
       id: '',
       Nombre: '',
+      TypeDocument: '',
       Document: '',
       Correo: '',
       Celular: '',
-      Nejemplares: ''
+      Nejemplares: '',
+      estado: true
     },
     modalAñadir: false,
     modalEditar: false,
@@ -46,13 +54,17 @@ class Clientes extends React.Component {
     const searchText = e.target.value.toLowerCase();
     this.setState({
       searchText,
-      filteredData: this.state.data.filter(item =>
-        item.Nombre.toLowerCase().includes(searchText) ||
-        item.Document.toString().includes(searchText) ||
-        item.Correo.toLowerCase().includes(searchText) ||
-        item.Celular.toString().includes(searchText)
-      )
+      filteredData: this.filterData(searchText)
     });
+  }
+
+  filterData = (searchText) => {
+    return this.state.data.filter(item =>
+      (item.Nombre.toLowerCase().includes(searchText) ||
+      item.Document.toString().includes(searchText) ||
+      item.Correo.toLowerCase().includes(searchText) ||
+      item.Celular.toString().includes(searchText))
+    );
   }
 
   mostrarmodalAñadir = () => {
@@ -64,10 +76,12 @@ class Clientes extends React.Component {
       form: {
         id: '',
         Nombre: '',
+        TypeDocument: '',
         Document: '',
         Correo: '',
         Celular: '',
-        Nejemplares: ''
+        Nejemplares: '',
+        estado: true
       }
     });
   }
@@ -99,10 +113,10 @@ class Clientes extends React.Component {
   }
 
   Añadir = () => {
-    const { Nombre, Document, Correo, Celular, Nejemplares } = this.state.form;
+    const { Nombre, TypeDocument, Document, Correo, Celular, Nejemplares } = this.state.form;
 
     // Validar campos obligatorios
-    if (!Nombre || !Document || !Correo || !Celular || !Nejemplares) {
+    if (!Nombre || !TypeDocument || !Document || !Correo || !Celular || !Nejemplares) {
       Swal.fire('Error', 'Todos los campos son obligatorios.', 'error');
       return;
     }
@@ -127,13 +141,13 @@ class Clientes extends React.Component {
 
     const valorNuevo = { ...this.state.form, id: this.state.data.length + 1 };
     const lista = [...this.state.data, valorNuevo];
-    this.setState({ data: lista, filteredData: lista, modalAñadir: false });
+    this.setState({ data: lista, filteredData: this.filterData(this.state.searchText), modalAñadir: false });
     Swal.fire('Éxito', 'Cliente registrado exitosamente.', 'success');
   }
 
   editar = (dato) => {
     // Validar campos obligatorios
-    if (!dato.Nombre || !dato.Document || !dato.Correo || !dato.Celular || !dato.Nejemplares) {
+    if (!dato.Nombre || !dato.TypeDocument || !dato.Document || !dato.Correo || !dato.Celular || !dato.Nejemplares) {
       Swal.fire('Error', 'Todos los campos son obligatorios.', 'error');
       return;
     }
@@ -160,7 +174,7 @@ class Clientes extends React.Component {
     const lista = this.state.data.map(registro =>
       registro.id === dato.id ? { ...dato } : registro
     );
-    this.setState({ data: lista, filteredData: lista, modalEditar: false });
+    this.setState({ data: lista, filteredData: this.filterData(this.state.searchText), modalEditar: false });
     Swal.fire('Éxito', 'Cliente actualizado exitosamente.', 'success');
   }
 
@@ -177,8 +191,31 @@ class Clientes extends React.Component {
     }).then(result => {
       if (result.isConfirmed) {
         const lista = this.state.data.filter(registro => registro.id !== dato.id);
-        this.setState({ data: lista, filteredData: lista });
+        this.setState({ data: lista, filteredData: this.filterData(this.state.searchText) });
         Swal.fire('Eliminado', 'Cliente eliminado exitosamente.', 'success');
+      }
+    });
+  }
+
+  toggleState = (id) => {
+    const registro = this.state.data.find(item => item.id === id);
+    
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: `Realmente deseas cambiar el estado del registro ${registro.id}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, cambiar',
+      cancelButtonText: 'Cancelar'
+    }).then(result => {
+      if (result.isConfirmed) {
+        const lista = this.state.data.map(registro =>
+          registro.id === id ? { ...registro, estado: !registro.estado } : registro
+        );
+        this.setState({ data: lista, filteredData: this.filterData(this.state.searchText) });
+        Swal.fire('Estado cambiado', `El estado del cliente ${id} ha sido actualizado.`, 'success');
       }
     });
   }
@@ -189,11 +226,9 @@ class Clientes extends React.Component {
     return (
       <>
         <Container>
-          <div className="d-flex justify-content-center mb-3">
-            <h1 className="text-center border p-2">Clientes</h1>
-          </div>
+          <p></p>
           <div className="d-flex justify-content-between mb-3">
-          <Input
+            <Input
               type="text"
               placeholder="Buscar"
               value={this.state.searchText}
@@ -207,11 +242,13 @@ class Clientes extends React.Component {
             <thead>
               <tr>
                 <th>Id</th>
-                <th>Nombre</th>
+                <th>Nombre Completo</th>
+                <th>Tipo Documento</th>
                 <th>Documento</th>
                 <th>Correo</th>
                 <th>Celular</th>
                 <th>Nejemplares</th>
+                <th>Estado</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -220,17 +257,38 @@ class Clientes extends React.Component {
                 <tr key={elemento.id}>
                   <td>{elemento.id}</td>
                   <td>{elemento.Nombre}</td>
+                  <td>{elemento.TypeDocument}</td>
                   <td>{elemento.Document}</td>
                   <td>{elemento.Correo}</td>
                   <td>{elemento.Celular}</td>
                   <td>{elemento.Nejemplares}</td>
+                  <td>{elemento.estado ? "Activo" : "Inactivo"}</td>
                   <td>
-                    <Button color="dark" onClick={() => this.mostrarModalEditar(elemento)}>
-                      <FontAwesomeIcon icon={faEdit} size="sm" className="btn-sm" />
-                    </Button>{' '}
-                    <Button color="danger" onClick={() => this.eliminar(elemento)}>
-                      <FontAwesomeIcon icon={faTrash} size="sm" className="btn-sm" />
-                    </Button>
+                    <ButtonGroup>
+                      <Button 
+                        color={elemento.estado ? "secondary" : "success"} 
+                        onClick={(e) => { e.stopPropagation(); this.toggleState(elemento.id); }}
+                        size="sm"
+                        className="mr-1"
+                      >
+                        {elemento.estado ? "Off" : "On"}
+                      </Button>
+                      <Button 
+                        color="dark" 
+                        onClick={(e) => { e.stopPropagation(); this.mostrarModalEditar(elemento); }}
+                        size="sm"
+                        className="mr-1"
+                      >
+                        <FontAwesomeIcon icon={faEdit} />
+                      </Button>
+                      <Button 
+                        color="danger" 
+                        onClick={(e) => { e.stopPropagation(); this.eliminar(elemento); }}
+                        size="sm"
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </Button>
+                    </ButtonGroup>
                   </td>
                 </tr>
               ))}
@@ -239,18 +297,27 @@ class Clientes extends React.Component {
         </Container>
 
         {/* Modal para añadir un nuevo cliente */}
-        <Modal isOpen={modalAñadir}>
-          <ModalHeader>
-            <div>
-              <h3>Añadir cliente</h3>
-            </div>
+        <Modal isOpen={modalAñadir} toggle={this.ocultarmodalAñadir}>
+          <ModalHeader toggle={this.ocultarmodalAñadir}>
+            <h3>Añadir cliente</h3>
           </ModalHeader>
 
           <ModalBody>
             <FormGroup>
-              <label>Nombre:</label>
+              <label>Nombre Completo:</label>
               <input className="form-control" name="Nombre" type="text" onChange={this.handleChange} />
               <small className="text-danger">{nameError}</small>
+            </FormGroup>
+
+            <FormGroup>
+              <label>Tipo de Documento:</label>
+              <select className="form-control" name="TypeDocument" onChange={this.handleChange} value={form.TypeDocument}>
+                <option value="">Selecciona un tipo de documento</option>
+                {tiposDocumento.map((tipo, index) => (
+                  <option key={index} value={tipo}>{tipo}</option>
+                ))}
+              </select>
+              <small className="text-danger">{documentError}</small>
             </FormGroup>
 
             <FormGroup>
@@ -283,16 +350,14 @@ class Clientes extends React.Component {
         </Modal>
 
         {/* Modal para editar un cliente */}
-        <Modal isOpen={modalEditar}>
-          <ModalHeader>
-            <div>
-              <h3>Editar cliente</h3>
-            </div>
+        <Modal isOpen={modalEditar} toggle={this.ocultarModalEditar}>
+          <ModalHeader toggle={this.ocultarModalEditar}>
+            <h3>Editar cliente</h3>
           </ModalHeader>
 
           <ModalBody>
             <FormGroup>
-              <label>Nombre:</label>
+              <label>Nombre Completo:</label>
               <input
                 className="form-control"
                 name="Nombre"
@@ -301,6 +366,17 @@ class Clientes extends React.Component {
                 onChange={this.handleChange}
               />
               <small className="text-danger">{nameError}</small>
+            </FormGroup>
+
+            <FormGroup>
+              <label>Tipo de Documento:</label>
+              <select className="form-control" name="TypeDocument" onChange={this.handleChange} value={form.TypeDocument}>
+                <option value="">Selecciona un tipo de documento</option>
+                {tiposDocumento.map((tipo, index) => (
+                  <option key={index} value={tipo}>{tipo}</option>
+                ))}
+              </select>
+              <small className="text-danger">{documentError}</small>
             </FormGroup>
 
             <FormGroup>
