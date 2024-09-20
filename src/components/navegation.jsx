@@ -23,6 +23,7 @@ import Records from '../components/modules/records';
 import Logout from '../components/modules/logout';
 import Categoryofspecimens from '../components/modules/categoryofspecimens';
 import Specimens from '../components/modules/specimens';
+import DetailsP from '../components/modules/DetailsP';
 
 export default class NavbarComp extends Component {
   constructor(props) {
@@ -138,6 +139,7 @@ export default class NavbarComp extends Component {
             <Route path='/Packages' element={<Packages />} />
             <Route path='/Headquarters' element={<Headquarters />} />
             <Route path="/Specimens/:id" element={<Specimens />} />
+            <Route path='/DetailsP/:id' element={<DetailsP />} />
             <Route path='/Categoryofspecimens' element={<Categoryofspecimens />} /> 
             <Route path='/Tracking' element={<Tracking />} />
             <Route path='/Transfers' element={<Transfers />} />
