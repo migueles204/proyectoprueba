@@ -1,16 +1,14 @@
-// Medicinas.jsx
 import React from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { Table, Button, Container, Modal, ModalBody, ModalHeader, ModalFooter, FormGroup, Input } from 'reactstrap';
+import { Table, Button, ButtonGroup, Container, Modal, ModalBody, ModalHeader, ModalFooter, FormGroup, Input } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
 
 // Datos iniciales de medicinas
 const data = [
-  { id: 1, NombreMedicina: "Medicina A", Cantidad: "10", Dosis: "2ml", HorarioAdministracion: "08:00 AM" },
-  { id: 2, NombreMedicina: "Medicina B", Cantidad: "20", Dosis: "5ml", HorarioAdministracion: "12:00 PM" },
-  { id: 3, NombreMedicina: "Medicina C", Cantidad: "15", Dosis: "1ml", HorarioAdministracion: "06:00 PM" }
+  { id: 1, NombreMedicina: "Medicina A", Cantidad: "10", Dosis: "2ml", HorarioAdministracion: "08:00 AM", Estado: 'Administrado' },
+  { id: 2, NombreMedicina: "Medicina B", Cantidad: "20", Dosis: "5ml", HorarioAdministracion: "12:00 PM", Estado: 'No Administrado' },
+  { id: 3, NombreMedicina: "Medicina C", Cantidad: "15", Dosis: "1ml", HorarioAdministracion: "06:00 PM", Estado: 'Administrado' }
 ];
 
 class Medicinas extends React.Component {
@@ -22,7 +20,8 @@ class Medicinas extends React.Component {
       NombreMedicina: '',
       Cantidad: '',
       Dosis: '',
-      HorarioAdministracion: ''
+      HorarioAdministracion: '',
+      Estado: 'No Administrado'
     },
     modalAñadir: false,
     modalEditar: false,
@@ -67,7 +66,8 @@ class Medicinas extends React.Component {
         NombreMedicina: '',
         Cantidad: '',
         Dosis: '',
-        HorarioAdministracion: ''
+        HorarioAdministracion: '',
+        Estado: 'No Administrado'
       }
     });
   }
@@ -213,14 +213,18 @@ class Medicinas extends React.Component {
     });
   }
 
+  toggleEstado = (id) => {
+    const lista = this.state.data.map(registro =>
+      registro.id === id ? { ...registro, Estado: registro.Estado === 'Administrado' ? 'No Administrado' : 'Administrado' } : registro
+    );
+    this.setState({ data: lista, filteredData: lista });
+  }
+
   render() {
     const { form, modalAñadir, modalEditar, nombreMedicinaError, cantidadError, dosisError, horarioError } = this.state;
 
     return (
       <Container>
-        <div className="d-flex justify-content-center mb-3">
-          <h1 className="text-center border p-2">Medicinas</h1>
-        </div>
         <div className="d-flex justify-content-between mb-3">
           <Input
             type="text"
@@ -229,7 +233,7 @@ class Medicinas extends React.Component {
             onChange={this.handleSearch}
             style={{ width: '300px' }}
           />
-          <Button color="success" onClick={this.mostrarmodalAñadir}>Añadir ítem</Button>
+          <Button color="success" onClick={this.mostrarmodalAñadir}>Añadir medicina</Button>
         </div>
 
         <Table className="table table-bordered">
@@ -239,30 +243,51 @@ class Medicinas extends React.Component {
               <th>Cantidad</th>
               <th>Dosis</th>
               <th>Horario Administración</th>
+              <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {this.state.filteredData.map((elemento) => (
+            {this.state.filteredData.map(elemento => (
               <tr key={elemento.id}>
                 <td>{elemento.NombreMedicina}</td>
                 <td>{elemento.Cantidad}</td>
                 <td>{elemento.Dosis}</td>
                 <td>{elemento.HorarioAdministracion}</td>
+                <td>{elemento.Estado}</td>
                 <td>
-                  <Button color="primary" onClick={() => this.mostrarModalEditar(elemento)}>
-                    <FontAwesomeIcon icon={faEdit} size="sm" className="btn-sm" />
-                  </Button>
-                  <Button color="danger" onClick={() => this.eliminar(elemento)}>
-                    <FontAwesomeIcon icon={faTrash} size="sm" className="btn-sm" />
-                  </Button>
+                  <ButtonGroup>
+                    <Button
+                      color={elemento.Estado === 'Administrado' ? 'secondary' : 'success'}
+                      onClick={() => this.toggleEstado(elemento.id)}
+                      size="sm"
+                      className="mr-1"
+                    >
+                      {elemento.Estado === 'Administrado' ? 'Off' : 'On'}
+                    </Button>
+                    <Button
+                      color="dark"
+                      onClick={() => this.mostrarModalEditar(elemento)}
+                      size="sm"
+                      className="mr-1"
+                    >
+                      <FontAwesomeIcon icon={faEdit} />
+                    </Button>
+                    <Button
+                      color="danger"
+                      onClick={() => this.eliminar(elemento)}
+                      size="sm"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </Button>
+                  </ButtonGroup>
                 </td>
               </tr>
             ))}
           </tbody>
         </Table>
 
-        {/* Modal para añadir un nuevo ítem */}
+        {/* Modal Añadir */}
         <Modal isOpen={modalAñadir}>
           <ModalHeader>
             <div>
@@ -273,25 +298,49 @@ class Medicinas extends React.Component {
           <ModalBody>
             <FormGroup>
               <label>Nombre Medicina:</label>
-              <Input className="form-control" name="NombreMedicina" type="text" onChange={this.handleChange} />
+              <Input
+                className="form-control"
+                name="NombreMedicina"
+                type="text"
+                value={form.NombreMedicina}
+                onChange={this.handleChange}
+              />
               <small className="text-danger">{nombreMedicinaError}</small>
             </FormGroup>
 
             <FormGroup>
               <label>Cantidad:</label>
-              <Input className="form-control" name="Cantidad" type="text" onChange={this.handleChange} />
+              <Input
+                className="form-control"
+                name="Cantidad"
+                type="text"
+                value={form.Cantidad}
+                onChange={this.handleChange}
+              />
               <small className="text-danger">{cantidadError}</small>
             </FormGroup>
 
             <FormGroup>
               <label>Dosis:</label>
-              <Input className="form-control" name="Dosis" type="text" onChange={this.handleChange} />
+              <Input
+                className="form-control"
+                name="Dosis"
+                type="text"
+                value={form.Dosis}
+                onChange={this.handleChange}
+              />
               <small className="text-danger">{dosisError}</small>
             </FormGroup>
 
             <FormGroup>
               <label>Horario Administración:</label>
-              <Input className="form-control" name="HorarioAdministracion" type="text" onChange={this.handleChange} />
+              <Input
+                className="form-control"
+                name="HorarioAdministracion"
+                type="text"
+                value={form.HorarioAdministracion}
+                onChange={this.handleChange}
+              />
               <small className="text-danger">{horarioError}</small>
             </FormGroup>
           </ModalBody>
@@ -302,7 +351,7 @@ class Medicinas extends React.Component {
           </ModalFooter>
         </Modal>
 
-        {/* Modal para editar un ítem */}
+        {/* Modal Editar */}
         <Modal isOpen={modalEditar}>
           <ModalHeader>
             <div>
@@ -357,6 +406,21 @@ class Medicinas extends React.Component {
                 onChange={this.handleChange}
               />
               <small className="text-danger">{horarioError}</small>
+            </FormGroup>
+
+            <FormGroup>
+              <label>Estado:</label>
+              <Input
+                type="select"
+                name="Estado"
+                value={form.Estado}
+                onChange={this.handleChange}
+                className="form-control"
+              >
+                <option value="Administrado">Administrado</option>
+                <option value="No Administrado">No Administrado</option>
+              </Input>
+              <small className="text-danger">{this.state.estadoError}</small>
             </FormGroup>
           </ModalBody>
 

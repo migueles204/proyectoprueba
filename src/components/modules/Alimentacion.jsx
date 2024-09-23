@@ -1,16 +1,16 @@
 // Alimentacion.jsx
 import React from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Table, Button, Container, Modal, ModalBody, ModalHeader, ModalFooter, FormGroup, Input } from 'reactstrap';
+import { Table, Button, Container, Modal, ModalBody, ModalHeader, ModalFooter, FormGroup, Input, ButtonGroup } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faToggleOn, faToggleOff } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
 
 // Datos iniciales de alimentación
 const data = [
-  { id: 1, Nombre: "Carne de res", Cantidad: 5, Frecuencia: "Diaria" },
-  { id: 2, Nombre: "Leche", Cantidad: 10, Frecuencia: "Semanal" },
-  { id: 3, Nombre: "Manzanas", Cantidad: 20, Frecuencia: "Diaria" }
+  { id: 1, Nombre: "Carne de res", Cantidad: 5, Frecuencia: "Diaria", Estado: 'Administrado' },
+  { id: 2, Nombre: "Leche", Cantidad: 10, Frecuencia: "Semanal", Estado: 'No administrado' },
+  { id: 3, Nombre: "Manzanas", Cantidad: 20, Frecuencia: "Diaria", Estado: 'Administrado' }
 ];
 
 class Alimentacion extends React.Component {
@@ -21,7 +21,8 @@ class Alimentacion extends React.Component {
       id: '',
       Nombre: '',
       Cantidad: '',
-      Frecuencia: ''
+      Frecuencia: '',
+      Estado: 'No administrado'
     },
     modalAñadir: false,
     modalEditar: false,
@@ -61,7 +62,8 @@ class Alimentacion extends React.Component {
         id: '',
         Nombre: '',
         Cantidad: '',
-        Frecuencia: ''
+        Frecuencia: '',
+        Estado: true
       }
     });
   }
@@ -71,7 +73,7 @@ class Alimentacion extends React.Component {
   }
 
   mostrarModalEditar = (registro) => {
-    this.setState({ modalEditar: true, form: registro, nombreError: '', cantidadError: '', frecuenciaError: '' });
+    this.setState({ modalEditar: true, form: { ...registro }, nombreError: '', cantidadError: '', frecuenciaError: '' });
   }
 
   ocultarModalEditar = () => {
@@ -95,7 +97,7 @@ class Alimentacion extends React.Component {
   }
 
   Añadir = () => {
-    const { Nombre, Cantidad, Frecuencia } = this.state.form;
+    const { Nombre, Cantidad, Frecuencia, Estado } = this.state.form;
 
     // Validar campos obligatorios
     if (!Nombre || !Cantidad || !Frecuencia) {
@@ -191,14 +193,18 @@ class Alimentacion extends React.Component {
     });
   }
 
+  toggleEstado = (id) => {
+    const lista = this.state.data.map(registro =>
+      registro.id === id ? { ...registro, Estado: registro.Estado === 'Administrado' ? 'No Administrado' : 'Administrado' } : registro
+    );
+    this.setState({ data: lista, filteredData: lista });
+  }
+
   render() {
     const { form, modalAñadir, modalEditar, nombreError, cantidadError, frecuenciaError } = this.state;
 
     return (
       <Container>
-        <div className="d-flex justify-content-center mb-3">
-          <h1 className="text-center border p-2">Alimentación</h1>
-        </div>
         <div className="d-flex justify-content-between mb-3">
           <Input
             type="text"
@@ -207,7 +213,7 @@ class Alimentacion extends React.Component {
             onChange={this.handleSearch}
             style={{ width: '300px' }}
           />
-          <Button color="success" onClick={this.mostrarmodalAñadir}>Añadir ítem</Button>
+          <Button color="success" onClick={this.mostrarmodalAñadir}>Añadir alimento</Button>
         </div>
 
         <Table className="table table-bordered">
@@ -216,6 +222,7 @@ class Alimentacion extends React.Component {
               <th>Nombre</th>
               <th>Cantidad</th>
               <th>Frecuencia</th>
+              <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -225,13 +232,33 @@ class Alimentacion extends React.Component {
                 <td>{elemento.Nombre}</td>
                 <td>{elemento.Cantidad}</td>
                 <td>{elemento.Frecuencia}</td>
+                <td>{elemento.Estado}</td>
                 <td>
-                  <Button color="dark" onClick={() => this.mostrarModalEditar(elemento)}>
-                    <FontAwesomeIcon icon={faEdit} size="sm" className="btn-sm" />
-                  </Button>{' '}
-                  <Button color="danger" onClick={() => this.eliminar(elemento)}>
-                    <FontAwesomeIcon icon={faTrash} size="sm" className="btn-sm" />
-                  </Button>
+                <ButtonGroup>
+                    <Button
+                      color={elemento.Estado === 'Administrado' ? 'secondary' : 'success'}
+                      onClick={() => this.toggleEstado(elemento.id)}
+                      size="sm"
+                      className="mr-1"
+                    >
+                      {elemento.Estado === 'Administrado' ? 'Off' : 'On'}
+                    </Button>
+                    <Button
+                      color="dark"
+                      onClick={() => this.mostrarModalEditar(elemento)}
+                      size="sm"
+                      className="mr-1"
+                    >
+                      <FontAwesomeIcon icon={faEdit} />
+                    </Button>
+                    <Button
+                      color="danger"
+                      onClick={() => this.eliminar(elemento)}
+                      size="sm"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </Button>
+                  </ButtonGroup>
                 </td>
               </tr>
             ))}
@@ -249,19 +276,19 @@ class Alimentacion extends React.Component {
           <ModalBody>
             <FormGroup>
               <label>Nombre:</label>
-              <input className="form-control" name="Nombre" type="text" onChange={this.handleChange} />
+              <Input className="form-control" name="Nombre" type="text" onChange={this.handleChange} />
               <small className="text-danger">{nombreError}</small>
             </FormGroup>
 
             <FormGroup>
               <label>Cantidad:</label>
-              <input className="form-control" name="Cantidad" type="number" onChange={this.handleChange} />
+              <Input className="form-control" name="Cantidad" type="number" onChange={this.handleChange} />
               <small className="text-danger">{cantidadError}</small>
             </FormGroup>
 
             <FormGroup>
               <label>Frecuencia:</label>
-              <input className="form-control" name="Frecuencia" type="text" onChange={this.handleChange} />
+              <Input className="form-control" name="Frecuencia" type="text" onChange={this.handleChange} />
               <small className="text-danger">{frecuenciaError}</small>
             </FormGroup>
           </ModalBody>
@@ -283,7 +310,7 @@ class Alimentacion extends React.Component {
           <ModalBody>
             <FormGroup>
               <label>Nombre:</label>
-              <input
+              <Input
                 className="form-control"
                 name="Nombre"
                 type="text"
@@ -295,7 +322,7 @@ class Alimentacion extends React.Component {
 
             <FormGroup>
               <label>Cantidad:</label>
-              <input
+              <Input
                 className="form-control"
                 name="Cantidad"
                 type="number"
@@ -307,7 +334,7 @@ class Alimentacion extends React.Component {
 
             <FormGroup>
               <label>Frecuencia:</label>
-              <input
+              <Input
                 className="form-control"
                 name="Frecuencia"
                 type="text"

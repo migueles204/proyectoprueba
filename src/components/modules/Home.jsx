@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardBody, CardHeader, CardTitle, CardText, Row, Col, Button, Collapse, FormGroup, Label, Input, Form, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import { FaTrash } from 'react-icons/fa'; // Importa el ícono de la "X"import 'bootstrap-icons/font/bootstrap-icons.css'
+import { FaTrash, FaEdit } from 'react-icons/fa';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Swal from 'sweetalert2';
@@ -27,10 +27,9 @@ const HorseTrackingWithScheduler = () => {
   const [observationDate, setObservationDate] = useState('');
   const [observations, setObservations] = useState([
     { id: 1, title: 'Consulta General', details: 'Se realizó una revisión completa del caballo. No se encontraron problemas.', date: '2024-09-01', category: 'Historial Veterinario', active: true },
-    { id: 2, title: 'Entrenamiento Diario', details: 'Se completó el entrenamiento de la mañana y tarde.', date: '2024-09-02', category: 'Actividad Física', active: true },
-    { id: 3, title: 'Suplementos', details: 'Se administraron suplementos vitamínicos.', date: '2024-09-03', category: 'Medicación', active: true },
-    { id: 4, title: 'Dieta Balanceada', details: 'Se completó la alimentación diaria con dieta balanceada.', date: '2024-09-04', category: 'Alimentación', active: true },
-  ]);
+    { id: 2, title: 'Entrenamiento Diario', details: 'Se completó el entrenamiento de la mañana y tarde.', date: '2024-09-02', category: 'Actividad Física', active: true },]);
+  const [editObservation, setEditObservation] = useState(null); // Estado para la observación en edición
+  const [observationActive, setObservationActive] = useState(true); // Estado para manejar el estado de la observación
 
   const onDateChange = (selectedDate) => {
     if (selectedDate < new Date()) {
@@ -141,55 +140,17 @@ const HorseTrackingWithScheduler = () => {
     });
   };
 
-  const validateObservationFields = () => {
-    const titleRegex = /^[^\d][\w\s]+$/;
-    const detailsRegex = /^[^\d][\w\s]+$/;
-
-    if (!observationTitle || !observationDetails || !observationDate) {
-      Swal.fire({
-        title: 'Campos incompletos',
-        text: 'Por favor, completa todos los campos antes de guardar.',
-        icon: 'warning',
-        confirmButtonColor: '#3085d6',
-        confirmButtonText: 'Aceptar'
-      });
-      return false;
-    }
-
-    if (!titleRegex.test(observationTitle)) {
-      Swal.fire({
-        title: 'Título inválido',
-        text: 'El título no puede comenzar con un número ni contener caracteres especiales.',
-        icon: 'warning',
-        confirmButtonColor: '#3085d6',
-        confirmButtonText: 'Aceptar'
-      });
-      return false;
-    }
-
-    if (!detailsRegex.test(observationDetails)) {
-      Swal.fire({
-        title: 'Detalles inválidos',
-        text: 'Los detalles no pueden comenzar con un número ni contener caracteres especiales.',
-        icon: 'warning',
-        confirmButtonColor: '#3085d6',
-        confirmButtonText: 'Aceptar'
-      });
-      return false;
-    }
-
-    return true;
-  };
-
   const handleCreateObservation = () => {
     if (validateObservationFields()) {
       const newObservation = {
+        id: observations.length + 1, // Generar un ID simple para nuevas observaciones
         title: observationTitle,
         details: observationDetails,
         date: observationDate,
+        active: true,
       };
   
-      setObservations([...observations, newObservation]);
+      setObservations([...observations, newObservation]); // Actualizar el estado
   
       Swal.fire({
         title: 'Éxito',
@@ -203,10 +164,90 @@ const HorseTrackingWithScheduler = () => {
       setObservationTitle('');
       setObservationDetails('');
       setObservationDate('');
-      toggleCreateObservationModal();
+      toggleCreateObservationModal(); // Cerrar modal
     }
   };
+
+  const validateObservationFields = () => {
+    const titleRegex = /^[^\d][\w\s]+$/;
+    const detailsRegex = /^[^\d][\w\s]+$/;
   
+    if (!observationTitle || !observationDetails || !observationDate) {
+      Swal.fire({
+        title: 'Campos incompletos',
+        text: 'Por favor, completa todos los campos antes de guardar.',
+        icon: 'warning',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Aceptar'
+      });
+      return false;
+    }
+  
+    if (!titleRegex.test(observationTitle)) {
+      Swal.fire({
+        title: 'Título inválido',
+        text: 'El título no puede comenzar con un número ni contener caracteres especiales.',
+        icon: 'warning',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Aceptar'
+      });
+      return false;
+    }
+  
+    if (!detailsRegex.test(observationDetails)) {
+      Swal.fire({
+        title: 'Detalles inválidos',
+        text: 'Los detalles no pueden comenzar con un número ni contener caracteres especiales.',
+        icon: 'warning',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Aceptar'
+      });
+      return false;
+    }
+  
+    return true;
+  };  
+  
+  const handleToggleObservationStatus = (id) => {
+    const updatedObservations = observations.map((obs) =>
+      obs.id === id ? { ...obs, active: !obs.active } : obs
+    );
+    setObservations(updatedObservations);
+  };  
+
+  const toggleEditObservationModal = (observation) => {
+    setEditObservation(observation);
+    setObservationTitle(observation.title);
+    setObservationDetails(observation.details);
+    setObservationDate(observation.date);
+  };
+  
+  const handleEditObservation = () => {
+    if (validateObservationFields()) {
+      const updatedObservations = observations.map((obs) =>
+        obs.id === editObservation.id
+          ? { ...obs, title: observationTitle, details: observationDetails, date: observationDate }
+          : obs
+      );
+      setObservations(updatedObservations);
+      
+      Swal.fire({
+        title: 'Éxito',
+        text: 'Observación actualizada exitosamente.',
+        icon: 'success',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Aceptar'
+      });
+  
+      // Limpiar campos y cerrar el modal
+      setObservationTitle('');
+      setObservationDetails('');
+      setObservationDate('');
+      setEditObservation(null);
+      toggleCreateObservationModal();
+    }
+  };  
+
   const handleRemoveObservation = (id) => {
     Swal.fire({
       title: '¿Estás seguro?',
@@ -229,13 +270,6 @@ const HorseTrackingWithScheduler = () => {
     });
   };
 
-  const handleToggleObservationStatus = (id) => {
-    const updatedObservations = observations.map((obs) =>
-      obs.id === id ? { ...obs, active: !obs.active } : obs
-    );
-    setObservations(updatedObservations);
-  };
-
   const buttonStyle = {
     width: '100%',
     fontWeight: 'bold',
@@ -248,11 +282,11 @@ const HorseTrackingWithScheduler = () => {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '10px 10px', // Ajustar padding para igualar la altura
-    lineHeight: '1.0' // Ajustar lineHeight para igualar la altura
+    lineHeight: '1.0'
   };
 
   return (
-<div>
+<div style={{padding: 16}}>
 <Row className="mb-3">
         <Col sm="4" className="text-center">
           <button 
@@ -277,7 +311,7 @@ const HorseTrackingWithScheduler = () => {
             <i className="bi bi-calendar2-check" style={{ marginRight: '8px' }}></i>
             Mostrar Eventos Agendados
           </button>
-        </Col>  
+        </Col>
         <Col sm="4" className="text-center">
           <Button 
             onClick={toggleCreateObservationModal}
@@ -429,43 +463,92 @@ const HorseTrackingWithScheduler = () => {
     </Form>
   </ModalBody>
 </Modal>
-          <Row style={{ textAlign: 'center' }}>
-      <Col sm="3">
-        <Card className="border-primary mb-3" style={{ maxWidth: '18rem', minHeight: '250px', margin: '0 auto' }}>
-          <CardHeader>Historial Veterinario</CardHeader>
-          <CardBody className="text-dark">
-            <CardTitle tag="h5">Consulta General</CardTitle>
-            <CardText>Se realizó una revisión completa del caballo. No se encontraron problemas.</CardText>
-          </CardBody>
-        </Card>
-      </Col>
-      <Col sm="3">
-        <Card className="border-info mb-3" style={{ maxWidth: '18rem', minHeight: '250px', margin: '0 auto' }}>
-          <CardHeader>Actividad Física</CardHeader>
-          <CardBody className="text-dark">
-            <CardTitle tag="h5">Entrenamiento Diario</CardTitle>
-            <CardText>Se completó el entrenamiento de la mañana y tarde.</CardText>
-          </CardBody>
-        </Card>
-      </Col>
-      <Col sm="3">
-        <Card className="border-success mb-3" style={{ maxWidth: '18rem', minHeight: '250px', margin: '0 auto' }}>
-          <CardHeader>Medicación</CardHeader>
-          <CardBody className="text-dark">
-            <CardTitle tag="h5">Suplementos</CardTitle>
-            <CardText>Se administraron suplementos vitamínicos.</CardText>
-          </CardBody>
-        </Card>
-      </Col>
-      <Col sm="3">
-        <Card className="border-warning mb-3" style={{ maxWidth: '18rem', minHeight: '250px', margin: '0 auto' }}>
-          <CardHeader>Alimentación</CardHeader>
-          <CardBody className="text-dark">
-            <CardTitle tag="h5">Dieta Balanceada</CardTitle>
-            <CardText>Se completó la alimentación diaria con dieta balanceada.</CardText>
-          </CardBody>
-        </Card>
-      </Col>
+<Modal isOpen={editObservation !== null} toggle={() => setEditObservation(null)} size="lg">
+  <ModalHeader toggle={() => setEditObservation(null)}>Editar Observación</ModalHeader>
+  <ModalBody>
+    <Form>
+      <FormGroup>
+        <Label for="observationTitle">Título de la Observación</Label>
+        <Input type="text" id="observationTitle" placeholder="Ingrese el título de la observación" value={observationTitle} onChange={(e) => setObservationTitle(e.target.value)} />
+      </FormGroup>
+      <FormGroup>
+        <Label for="observationDetails">Detalles</Label>
+        <Input type="textarea" id="observationDetails" placeholder="Ingrese los detalles de la observación" value={observationDetails} onChange={(e) => setObservationDetails(e.target.value)} />
+      </FormGroup>
+      <FormGroup>
+        <Label for="observationDate">Fecha</Label>
+        <Input type="date" id="observationDate" value={observationDate} onChange={(e) => setObservationDate(e.target.value)} />
+      </FormGroup>
+      <Button color="success" onClick={handleEditObservation}>Guardar Cambios</Button>
+      <Button color="danger" onClick={() => setEditObservation(null)} className="ml-2">Cancelar</Button>
+    </Form>
+  </ModalBody>
+</Modal>
+<Row>
+{observations.length > 0 ? (
+        observations.map((observation) => (
+          <Col md="4" key={observation.id} className="mb-3">
+            <Card className={`border-${observation.active ? 'success' : 'danger'}`}>
+              <CardHeader>
+                <CardTitle tag="h5">{observation.title}</CardTitle>
+              </CardHeader>
+              <CardBody>
+                <CardText>{observation.details}</CardText>
+                <CardText><strong>Fecha:</strong> {observation.date}</CardText>
+                <FormGroup>
+                  <Label for={`observationStatus-${observation.id}`}>Estado</Label>
+                  <Input
+                    type="text"
+                    id={`observationStatus-${observation.id}`}
+                    value={observation.active ? 'Activo' : 'Inactivo'}
+                    readOnly
+                    style={{
+                      textAlign: 'left',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      color: observation.active ? 'green' : 'black',
+                      fontWeight: 'bold',
+                      marginBottom: '10px'
+                    }}
+                  />
+                </FormGroup>
+                <div className="d-flex justify-content-start">
+                  <Button
+                    color={observation.active ? "success" : "secondary"}
+                    onClick={() => handleToggleObservationStatus(observation.id)}
+                    style={{ fontSize: '0.75rem', padding: '0.3rem 0.5rem', marginRight: '0.5rem' }}
+                  >
+                    {observation.active ? "Off" : "On"}
+                  </Button>
+                  <Button
+                    color="dark"
+                    onClick={() => toggleEditObservationModal(observation)}
+                    className="mr-2"
+                    style={{ fontSize: '0.75rem', padding: '0.3rem 0.5rem', marginRight: '0.70rem' }}
+                  >
+                    <FaEdit />
+                  </Button>
+                  <Button
+                    color="danger"
+                    onClick={() => handleRemoveObservation(observation.id)}
+                    style={{ fontSize: '0.70rem', padding: '0.3rem 0.5rem' }}
+                  >
+                    <FaTrash />
+                  </Button>
+                </div>
+              </CardBody>
+            </Card>
+          </Col>
+        ))
+      ) : (
+        <Col md="12">
+          <Card>
+            <CardBody>
+              <CardText>No hay observaciones disponibles.</CardText>
+            </CardBody>
+          </Card>
+        </Col>
+      )}
     </Row>
     </div>
   );
