@@ -14,8 +14,9 @@ function JustifiedExample() {
       id="justify-tab-example"
       className="mb-3"
       justify
+      style={{ padding: '16px' }}
     >
-      <Tab eventKey="home" title="Home">
+      <Tab eventKey="home" title="Historial de seguimiento y control del ejemplar">
         <Home />
       </Tab>
       <Tab eventKey="meds" title="Medicinas">

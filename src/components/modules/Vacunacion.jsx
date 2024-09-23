@@ -1,7 +1,7 @@
 // Vacunacion.jsx
 import React from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Table, Button, Container, Modal, ModalBody, ModalHeader, ModalFooter, FormGroup, Input } from 'reactstrap';
+import { Table, Button, Container, Modal, ModalBody, ModalHeader, ModalFooter, FormGroup, Input, ButtonGroup } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
@@ -21,7 +21,8 @@ class Vacunacion extends React.Component {
       id: '',
       NombreVacuna: '',
       FechaTomaMuestra: '',
-      MedicoVeterinario: ''
+      MedicoVeterinario: '',
+
     },
     modalAñadir: false,
     modalEditar: false,
@@ -197,9 +198,6 @@ class Vacunacion extends React.Component {
 
     return (
       <Container>
-        <div className="d-flex justify-content-center mb-3">
-          <h1 className="text-center border p-2">Vacunación</h1>
-        </div>
         <div className="d-flex justify-content-between mb-3">
           <Input
             type="text"
@@ -208,7 +206,7 @@ class Vacunacion extends React.Component {
             onChange={this.handleSearch}
             style={{ width: '300px' }}
           />
-          <Button color="success" onClick={this.mostrarmodalAñadir}>Añadir ítem</Button>
+          <Button color="success" onClick={this.mostrarmodalAñadir}>Añadir vacuna</Button>
         </div>
 
         <Table className="table table-bordered">
@@ -227,12 +225,23 @@ class Vacunacion extends React.Component {
                 <td>{elemento.FechaTomaMuestra}</td>
                 <td>{elemento.MedicoVeterinario}</td>
                 <td>
-                  <Button color="dark" onClick={() => this.mostrarModalEditar(elemento)}>
-                    <FontAwesomeIcon icon={faEdit} size="sm" className="btn-sm" />
-                  </Button>{' '}
-                  <Button color="danger" onClick={() => this.eliminar(elemento)}>
-                    <FontAwesomeIcon icon={faTrash} size="sm" className="btn-sm" />
-                  </Button>
+                <ButtonGroup>
+                    <Button
+                      color="dark"
+                      onClick={() => this.mostrarModalEditar(elemento)}
+                      size="sm"
+                      className="mr-1"
+                    >
+                      <FontAwesomeIcon icon={faEdit} />
+                    </Button>
+                    <Button
+                      color="danger"
+                      onClick={() => this.eliminar(elemento)}
+                      size="sm"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </Button>
+                  </ButtonGroup>
                 </td>
               </tr>
             ))}
