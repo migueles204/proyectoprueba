@@ -1,381 +1,207 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
+import { Table, Card, CardBody, Button, ButtonGroup, Modal, ModalHeader, ModalBody, ModalFooter, Form, FormGroup, Label, Input } from 'reactstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Table, Button, Container, Input, Row, Col, Modal, ModalBody, ModalFooter, ModalHeader, FormGroup, Label, ButtonGroup } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import Pagination from '@mui/lab/Pagination';
 import PaginationItem from '@mui/lab/PaginationItem';
-import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import { faEye } from '@fortawesome/free-solid-svg-icons';
 
 const modules = [
-  "Users", "Roles", "Employees", "Clients", "Services",
-  "Venues", "Category of Specimens", "Transfers", "Records", "Dashboard"
+   "Profile", "Users", "Roles", "Clients", "Services", "Package", "Headquarters", "Category of Specimens", "Transfers", "Records", "Dashboard"
 ];
-const permissions = ["Visualizar", "Crear", "Cambiar Estado", "Editar", "Eliminar"];
 
+const permissions = ["View", "Create", "Change Status", "Edit", "Delete"];
+
+// Initial Data
 const createInitialPermissions = () => {
   const initialPermissions = {};
   modules.forEach(mod => {
     initialPermissions[mod] = {
-      Visualizar: false,
-      Crear: false,
-      cambiarEstado: false,
-      Editar: false,
-      Eliminar: false,
+      View: false,
+      Create: false,
+      ChangeStatus: false,
+      Edit: false,
+      Delete: false,
     };
   });
   return initialPermissions;
 };
 
 const data = [
-  { id: 1, Rol: "Administrador", Description: "Se encargará de la administración de criadero", Estado: true, Permisos: createInitialPermissions() },
-  { id: 2, Rol: "Palafrenero", Description: "Se encargará de ayudarle al montador y también podrá administrar medicina si así es requerido", Estado: true, Permisos: createInitialPermissions() },
-  { id: 3, Rol: "Cuidador", Description: "Se encargará de la alimentación y cuidado de los ejemplares", Estado: true, Permisos: createInitialPermissions() }
+  { 
+    id: 1, 
+    Rol: "Administrador", 
+    Description: "Se encargará de la administración de criadero", 
+    Estado: true, 
+    Permisos: {
+      Users: { View: true, Create: true, ChangeStatus: true, Edit: true, Delete: true },
+      Roles: { View: true, Create: true, ChangeStatus: true, Edit: true, Delete: true },
+      Employees: { View: true, Create: true, ChangeStatus: true, Edit: true, Delete: true },
+      Clients: { View: true, Create: true, ChangeStatus: true, Edit: true, Delete: true },
+      Services: { View: true, Create: true, ChangeStatus: true, Edit: true, Delete: true },
+      Venues: { View: true, Create: true, ChangeStatus: true, Edit: true, Delete: true },
+      "Category of Specimens": { View: true, Create: true, ChangeStatus: true, Edit: true, Delete: true },
+      Transfers: { View: true, Create: true, ChangeStatus: true, Edit: true, Delete: true },
+      Records: { View: true, Create: true, ChangeStatus: true, Edit: true, Delete: true },
+      Dashboard: { View: true, Create: false, ChangeStatus: false, Edit: false, Delete: false }
+    }
+  },
+  { 
+    id: 2, 
+    Rol: "Palafrenero", 
+    Description: "Se encargará de ayudarle al montador y también podrá administrar medicina si así es requerido", 
+    Estado: true, 
+    Permisos: {
+      Users: { View: true, Create: false, ChangeStatus: false, Edit: false, Delete: false },
+      Roles: { View: true, Create: false, ChangeStatus: false, Edit: false, Delete: false },
+      Employees: { View: true, Create: true, ChangeStatus: false, Edit: true, Delete: false },
+      Clients: { View: true, Create: false, ChangeStatus: false, Edit: false, Delete: false },
+      Services: { View: true, Create: false, ChangeStatus: false, Edit: false, Delete: false },
+      Venues: { View: true, Create: false, ChangeStatus: false, Edit: false, Delete: false },
+      "Category of Specimens": { View: true, Create: false, ChangeStatus: false, Edit: false, Delete: false },
+      Transfers: { View: true, Create: false, ChangeStatus: false, Edit: false, Delete: false },
+      Records: { View: true, Create: false, ChangeStatus: false, Edit: false, Delete: false },
+      Dashboard: { View: true, Create: false, ChangeStatus: false, Edit: false, Delete: false }
+    }
+  },
+  { 
+    id: 3, 
+    Rol: "Cuidador", 
+    Description: "Se encargará de la alimentación y cuidado de los ejemplares", 
+    Estado: true, 
+    Permisos: {
+      Users: { View: false, Create: false, ChangeStatus: false, Edit: false, Delete: false },
+      Roles: { View: false, Create: false, ChangeStatus: false, Edit: false, Delete: false },
+      Employees: { View: true, Create: false, ChangeStatus: false, Edit: false, Delete: false },
+      Clients: { View: true, Create: false, ChangeStatus: false, Edit: false, Delete: false },
+      Services: { View: true, Create: false, ChangeStatus: false, Edit: false, Delete: false },
+      Venues: { View: true, Create: false, ChangeStatus: false, Edit: false, Delete: false },
+      "Category of Specimens": { View: false, Create: false, ChangeStatus: false, Edit: false, Delete: false },
+      Transfers: { View: false, Create: false, ChangeStatus: false, Edit: false, Delete: false },
+      Records: { View: true, Create: false, ChangeStatus: false, Edit: false, Delete: false },
+      Dashboard: { View: true, Create: false, ChangeStatus: false, Edit: false, Delete: false }
+    }
+  }
 ];
 
-class Roles extends Component {
-  state = {
-    data: data,
-    search: '',
-    selectedRole: null,
-    form: {
-      id: '',
-      Rol: '',
-      Description: '',
-      Estado: true,
-      Permisos: createInitialPermissions()
-    },
-    modalInsertar: false,
-    modalEditar: false,
-    originalPermissions: createInitialPermissions(),
-    page: 1,
-    rowsPerPage: 5,
+const Roles = () => {
+  const [roles, setRoles] = useState(data);
+  const [modal, setModal] = useState(false);
+  const [viewModal, setViewModal] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(null);
+  const [form, setForm] = useState({ role: '', description: '', status: true, permissions: createInitialPermissions() });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  const toggle = () => {
+    setModal(!modal);
+    if (modal) {
+      resetForm(); // Reset form on close
+    }
   };
 
-  handleChange = e => {
+  const toggleViewModal = (role) => {
+    console.log("Selected Role:", role); // Verificar los datos
+    setSelectedRole(role);
+    setViewModal(true);
+  };
+
+  const closeViewModal = () => {
+    setViewModal(false);
+    setSelectedRole(null);
+  };
+
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    this.setState(prevState => ({
-      form: {
-        ...prevState.form,
-        [name]: name === "Estado" ? value === "true" : value,
+    setForm({ ...form, [name]: value });
+  };
+
+  const handlePermissionChange = (module, permission) => {
+    if (module === "Dashboard" && permission !== "View") {
+      Swal.fire({
+        icon: "error",
+        title: "Permiso no permitido",
+        text: "Solo se permite seleccionar el permiso 'View' en el módulo 'Dashboard'."
+      });
+      return; // No cambiar el estado si no es "View"
+    }
+  
+    setForm(prevForm => ({
+      ...prevForm,
+      permissions: {
+        ...prevForm.permissions,
+        [module]: {
+          ...prevForm.permissions[module],
+          [permission]: !prevForm.permissions[module][permission]
+        }
       }
     }));
-  }
-
-  handleSearchChange = e => {
-    this.setState({ search: e.target.value });
-  }
-
-  handlePermissionChange = (module, permission) => {
-    if (module === "Dashboard" && permission !== "Visualizar") {
-      return;
-    }
-
-    const updatedPermissions = { ...this.state.selectedRole.Permisos };
-    updatedPermissions[module][permission] = !updatedPermissions[module][permission];
-    
-    this.setState(prevState => ({
-      selectedRole: {
-        ...prevState.selectedRole,
-        Permisos: updatedPermissions
-      }
-    }));
-  }
-
-  handleSavePermissions = () => {
-    const { selectedRole } = this.state;
-    if (!selectedRole) {
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: "Debe seleccionar un rol para guardar los permisos.",
-        customClass: {
-          confirmButton: 'custom-swal'
-        }
-      });
-      return;
-    }
-
-    const hasPermissions = Object.values(selectedRole.Permisos).some(
-      modulePermissions => Object.values(modulePermissions).includes(true)
-    );
-  
-    if (!hasPermissions) {
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: "Debe seleccionar al menos un permiso para guardar.",
-        customClass: {
-          confirmButton: 'custom-swal'
-        }
-      });
-      return;
-    }
-
-    const updatedData = this.state.data.map((registro) =>
-      registro.id === selectedRole.id ? selectedRole : registro
-    );
-    
-    this.setState({ data: updatedData });
-    
-    Swal.fire({
-      position: "center",
-      icon: "success",
-      title: "Permisos guardados exitosamente",
-      showConfirmButton: false,
-      timer: 1500,
-      customClass: {
-        confirmButton: 'custom-swal'
-      }
-    });
-  }  
-  
-  handleDiscardPermissions = () => {
-    const { selectedRole, originalPermissions } = this.state;
-  
-    if (!selectedRole) {
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: "Debe seleccionar un rol para descartar los cambios.",
-        customClass: {
-          confirmButton: 'custom-swal'
-        }
-      });
-      return;
-    }
-
-    const hasPermissions=Object.values(selectedRole.Permisos).some(
-      modulePermissions=>Object.values(modulePermissions).includes(true)
-    );
-
-    if(!hasPermissions){
-      Swal.fire({
-        icon:"error",
-        title:"Oops...",
-        text:"No hay permisos modificados para descartar.",
-        customClass:{
-          confirmButton:'custom-swal'
-        }
-    });
-    return;
-    }
-  
-    // Restaurar permisos originales
-    this.setState(prevState => ({
-      selectedRole: {
-        ...prevState.selectedRole,
-        Permisos: { ...prevState.originalPermissions }
-      }
-    }), () => {
-      Swal.fire({
-        position: "center",
-        icon: "info",
-        title: "Cambios en permisos descartados",
-        showConfirmButton: false,
-        timer: 1500,
-        customClass: {
-          confirmButton: 'custom-swal'
-        }
-      });
-    });
   };
   
-  handleResetPermissions = () => {
-    const { selectedRole, originalPermissions } = this.state;
+  const handleSubmit = () => {
+    const { role, description, permissions } = form;
+    const regex = /^[A-Za-z][A-Za-z0-9\s]*$/;
+
+    if (!regex.test(role)) {
+      Swal.fire({ icon: "error", title: "Oops...", text: "El nombre del rol no puede comenzar con un número o contener caracteres especiales." });
+      return;
+    }
+
+    if (role.trim() === '' || description.trim() === '') {
+      Swal.fire({ icon: "error", title: "Oops...", text: "Por favor, complete todos los campos." });
+      return;
+    }
+
+    const existingRole = roles.find(item => item.Rol.toLowerCase() === role.toLowerCase() && item.id !== (selectedRole ? selectedRole.id : null));
+    if (existingRole) {
+      Swal.fire({ icon: "error", title: "Oops...", text: "El rol ya existe." });
+      return;
+    }
+
     if (selectedRole) {
-      this.setState(prevState => ({
-        selectedRole: {
-          ...prevState.selectedRole,
-          Permisos: { ...originalPermissions }
-        }
-      }));
+      const updatedRoles = roles.map(r => r.id === selectedRole.id ? { ...r, Rol: role, Description: description, Permisos: permissions } : r);
+      setRoles(updatedRoles);
+      Swal.fire('Éxito', 'Rol actualizado con éxito.', 'success');
+    } else {
+      const newRole = { id: roles.length + 1, Rol: role, Description: description, Estado: form.status, Permisos: permissions };
+      setRoles([...roles, newRole]);
+      Swal.fire('Éxito', 'Rol agregado con éxito.', 'success');
     }
-  }    
 
-  mostrarModalInsertar = () => {
-    this.setState({
-      modalInsertar: true,
-      form: { id: '', Rol: '', Description: '', Estado: true, Permisos: createInitialPermissions() }
-    });
-  }
+    toggle();
+  };
 
-  ocultarModalInsertar = () => {
-    this.setState({ modalInsertar: false });
-  }
+  const resetForm = () => {
+    setForm({ role: '', description: '', status: true, permissions: createInitialPermissions() });
+    setSelectedRole(null);
+  };
 
-  mostrarModalEditar = (registro) => {
-    this.setState({ modalEditar: true, form: { ...registro } });
-  }
-
-  ocultarModalEditar = () => {
-    this.setState({ modalEditar: false });
-  }
-
-  insertar = () => {
-    try {
-      const { Rol, Description, Permisos } = this.state.form;
-  
-      const regex = /^[A-Za-z][A-Za-z0-9\s]*$/;
-      if (!regex.test(Rol)) {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: "El nombre del rol no puede comenzar con un número ni contener caracteres especiales.",
-          customClass: {
-            confirmButton: 'custom-swal'
-          }
-        });
-        return;
-      }
-  
-      if (Rol.trim() === '' || Description.trim() === '') {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: "Por favor, ingrese todos los campos",
-          customClass: {
-            confirmButton: 'custom-swal'
-          }
-        });
-        return;
-      }
-  
-      const rolExistente = this.state.data.find(registro => registro.Rol.toLowerCase() === Rol.toLowerCase());
-      if (rolExistente) {
-        throw new Error("El rol ya existe. Por favor, ingrese un nombre de rol diferente.");
-      }
-  
-      const nuevoRol = { ...this.state.form, id: this.state.data.length + 1 };
-      const lista = [...this.state.data, nuevoRol];
-      this.setState({ data: lista, modalInsertar: false });
-      Swal.fire({
-        position: "center",
-        icon: "success",
-        title: "Rol agregado exitosamente",
-        showConfirmButton: false,
-        timer: 1500,
-        customClass: {
-          confirmButton: 'custom-swal'
-        }
-      });
-    } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: `Error al insertar el rol: ${error.message}`,
-        customClass: {
-          confirmButton: 'custom-swal'
-        }
-      });
+  const handleDelete = (roleId) => {
+    const roleToDelete = roles.find(item => item.id === roleId);
+    if (roleToDelete.Estado) {
+      Swal.fire({ icon: "warning", title: "No se puede eliminar", text: "El rol está activo." });
+      return;
     }
-  }
-  
-  editar = () => {
-    try {
-      const { Rol, Description } = this.state.form;
-  
-      const regex = /^[A-Za-z][A-Za-z0-9\s]*$/;
-      if (!regex.test(Rol)) {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: "El nombre del rol no puede comenzar con un número ni contener caracteres especiales.",
-          customClass: {
-            confirmButton: 'custom-swal'
-          }
-        });
-        return;
-      }
-  
-      if (Rol.trim() === '' || Description.trim() === '') {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: "Por favor, ingrese todos los campos",
-          customClass: {
-            confirmButton: 'custom-swal'
-          }
-        });
-        return;
-      }
-  
-      const rolExistente = this.state.data.find(
-        registro =>
-          registro.id !== this.state.form.id &&
-          registro.Rol.toLowerCase() === Rol.toLowerCase()
-      );
-      if (rolExistente) {
-        throw new Error("El rol ya existe. Por favor, ingrese un nombre de rol diferente.");
-      }
-  
-      const lista = this.state.data.map(registro =>
-        registro.id === this.state.form.id ? this.state.form : registro
-      );
-      this.setState({ data: lista, modalEditar: false });
-      Swal.fire({
-        position: "center",
-        icon: "success",
-        title: "Rol editado exitosamente",
-        showConfirmButton: false,
-        timer: 1500,
-        customClass: {
-          confirmButton: 'custom-swal'
-        }
-      });
-    } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: `Error al editar el rol: ${error.message}`,
-        customClass: {
-          confirmButton: 'custom-swal'
-        }
-      });
-    }
-  }
-  
-  eliminar = (id) => {
+
     Swal.fire({
-      title: '¿Estás seguro?',
-      text: '¡No podrás revertir esto!',
+      title: '¿Está seguro?',
+      text: "¡No podrá revertir esto!",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      cancelButtonText: 'No, cancelar',
-      confirmButtonText: 'Sí, eliminar',
-      reverseButtons: true,
-      customClass: {
-        cancelButton: 'custom-swal',
-        confirmButton: 'custom-swal'
-      },
-      didOpen: (modal) => {
-        const icon = modal.querySelector('.swal2-icon.swal2-warning');
-        if (icon) {
-          icon.style.color = '#f1c40f';
-          icon.style.borderColor = '#f1c40f';
-        }
-      }
+      confirmButtonText: 'Sí, elimínalo',
+      cancelButtonText: 'No, cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.setState({ data: this.state.data.filter(item => item.id !== id) });
-        Swal.fire({
-          position: "center",
-          icon: "success",
-          title: "Rol eliminado exitosamente",
-          showConfirmButton: false,
-          timer: 1500,
-          customClass: {
-            confirmButton: 'custom-swal'
-          }
-        });
+        setRoles(roles.filter(r => r.id !== roleId));
+        Swal.fire('Eliminado!', 'El rol ha sido eliminado.', 'success');
       }
     });
-  }  
+  };
 
-  cambiarEstado = (id) => {
+  const changeStatus = (id) => {
     Swal.fire({
       title: '¿Estás seguro?',
       text: '¡Esto cambiará el estado del rol!',
@@ -399,273 +225,264 @@ class Roles extends Component {
       }
     }).then((result) => {
       if (result.isConfirmed) {
-        try {
-          // Realiza el cambio de estado aquí
-          const lista = this.state.data.map((registro) => {
-            if (registro.id === id) {
-              registro.Estado = !registro.Estado;
-            }
-            return registro;
-          });
-    
-          this.setState({ data: lista });
-    
-          // Muestra alerta de éxito
-          Swal.fire({
-            position: "center",
-            icon: "success",
-            title: "Estado cambiado exitosamente",
-            showConfirmButton: false,
-            timer: 1500,
-            customClass: {
-              confirmButton: 'custom-swal'
-            }
-          });
-        } catch (error) {
-          // Muestra alerta de error si ocurre un problema
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Hubo un problema al cambiar el estado',
-            confirmButtonColor: '#d33',
-            customClass: {
-              confirmButton: 'custom-swal'
-            }
-          });
-        }
-      }
-    });
-  };
+        const roleToEdit = roles.find(item => item.id === id);
+        const updatedList = roles.map(r =>
+          r.id === id ? { ...r, Estado: !r.Estado } : r
+        );
   
-
-  seleccionarRol = (rol) => {
-    if (this.state.selectedRole && JSON.stringify(this.state.selectedRole.Permisos) !== JSON.stringify(this.state.originalPermissions)) {
-      this.handleDiscardPermissions(); // Descartar cambios si hay cambios no guardados
-    } else {
-      this.setState({
-        selectedRole: rol,
-        originalPermissions: { ...rol.Permisos } // Guardar permisos originales
+        setRoles(updatedList);
+  
+        // Muestra alerta de éxito
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: `Estado cambiado a ${roleToEdit.Estado ? 'inactivo' : 'activo'} con éxito`,
+          showConfirmButton: false,
+          timer: 1500,
+          customClass: {
+            confirmButton: 'custom-swal'
+          }
+        });
+      }
+    }).catch((error) => {
+      // Muestra alerta de error si ocurre un problema
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Hubo un problema al cambiar el estado',
+        confirmButtonColor: '#d33',
+        customClass: {
+          confirmButton: 'custom-swal'
+        }
       });
-    }
-  };    
+    });
+  };  
 
-  handlePageChange = (event, newPage) => {
-    this.setState({ page: newPage });
-  };
+  const filteredRoles = roles.filter(role =>
+    role.Rol.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    role.Description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  render() {
-    const { search, selectedRole, data, modalInsertar, modalEditar, page, rowsPerPage } = this.state;
-    const filteredItems = data.filter(
-      item =>
-        item.Rol.toLowerCase().includes(search.toLowerCase()) ||
-        item.Description.toLowerCase().includes(search.toLowerCase())
-    );
+  const totalPages = Math.ceil(filteredRoles.length / itemsPerPage);
+  const currentRoles = filteredRoles.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-    const totalPages = Math.ceil(filteredItems.length / rowsPerPage);
-    const paginatedItems = filteredItems.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+  const handleEdit = (role) => {
+    console.log("Editing role:", role); // Agrega este console.log
+    setSelectedRole(role);
+    setForm({ role: role.Rol, description: role.Description, status: role.Estado, permissions: role.Permisos });
+    toggle(); // Asegúrate de que este toggle abra el modal
+};
 
-    const selectedStyle = {
-      backgroundColor: '#d3d3d3'
-    };
-
-    return (
-      <>
-        <Container>
-          <Row className="mb-3">
-            <Col md={6}>
-            <p></p>
-              <div className="d-flex align-items-center">
-                <Button color="success" onClick={this.mostrarModalInsertar}>Insertar Rol</Button>
-                <Input
-                  type="text"
-                  placeholder="Buscar rol..."
-                  value={search}
-                  onChange={this.handleSearchChange}
-                  style={{ width: '50%', fontSize: '1rem', marginLeft: '1rem' }}
-                />
-              </div>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col md={6}>
-              <Table className="table table-bordered" style={{ fontSize: '0.875rem' }}>
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Rol</th>
-                    <th>Descripción</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedItems.map((elemento) => (
-                    <tr
-                      key={elemento.id}
-                      onClick={() => this.seleccionarRol(elemento)}
-                      style={selectedRole && selectedRole.id === elemento.id ? selectedStyle : {}}
-                    >
-                      <td
-                        style={selectedRole && selectedRole.id === elemento.id ? selectedStyle : {}}
-                      >
-                        {elemento.id}
-                      </td>
-                      <td
-                        style={selectedRole && selectedRole.id === elemento.id ? selectedStyle : {}}
-                      >
-                        {elemento.Rol}
-                      </td>
-                      <td
-                        style={selectedRole && selectedRole.id === elemento.id ? selectedStyle : {}}
-                      >
-                        {elemento.Description}
-                      </td>
-                      <td
-                        style={selectedRole && selectedRole.id === elemento.id ? selectedStyle : {}}
-                      >
-                        {elemento.Estado ? "Activo" : "Inactivo"}
-                      </td>
-                      <td>
-                        <ButtonGroup>
-                          <Button
-                            color={elemento.Estado ? "secondary" : "success"}
-                            onClick={(e) => { e.stopPropagation(); this.cambiarEstado(elemento.id); }}
-                            size="sm"
-                            className="mr-1"
-                          >
-                            {elemento.Estado ? "off" : "on"}
-                          </Button>
-                          <Button
-                            color="dark"
-                            onClick={(e) => { e.stopPropagation(); this.mostrarModalEditar(elemento); }}
-                            size="sm"
-                            className="mr-1"
-                          >
-                            <FontAwesomeIcon icon={faEdit} />
-                          </Button>
-                          <Button
-                            color="danger"
-                            onClick={(e) => { e.stopPropagation(); this.eliminar(elemento); }}
-                            size="sm"
-                          >
-                            <FontAwesomeIcon icon={faTrash} />
-                          </Button>
-                        </ButtonGroup>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-              <Pagination
-                count={totalPages}
-                page={page}
-                onChange={this.handlePageChange}
-                renderItem={(item) => (
-                  <PaginationItem
-                    component={Link}
-                    to={`/roles?page=${item.page}`}
-                    {...item}
-                  />
-                )}
+  return (
+    <div className="container">
+      <p></p>
+      <div className="d-flex justify-content-between mb-3">
+        <Button color="success" onClick={toggle}>Agregar Rol</Button>
+        <Input
+          type="text"
+          placeholder="Buscar..."
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          style={{ width: '600px' }} // Size of the search input
+        />
+      </div>
+      <Table className="table table-bordered" responsive>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Rol</th>
+            <th>Descripción</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {currentRoles.map(role => (
+            <tr key={role.id}>
+              <td>{role.id}</td>
+              <td>{role.Rol}</td>
+              <td>{role.Description}</td>
+              <td>{role.Estado ? 'Activo' : 'Inactivo'}</td>
+              <td>
+                <ButtonGroup>
+                  <Button
+                    color={role.Estado ? 'success' : 'secondary'}
+                    onClick={(e) => { e.stopPropagation(); changeStatus(role.id); }}
+                    size="sm"
+                    className="mr-1"
+                  >
+                    {role.Estado ? 'Off' : 'On'}
+                  </Button>
+                  <Button
+                    color="dark"
+                    onClick={(e) => { e.stopPropagation(); handleEdit(role); }}
+                    size="sm"
+                    className="mr-1"
+                  >
+                    <FontAwesomeIcon icon={faEdit} />
+                  </Button>
+                  <Button
+                    color="danger"
+                    onClick={(e) => { e.stopPropagation(); handleDelete(role.id); }}
+                    size="sm"
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </Button>
+                  <Button
+                  outline
+                  style={{
+                    color: 'info',
+                    marginLeft: '0.5rem',
+                    backgroundColor: 'transparent',
+                    border: 'none'
+                  }}
+                  size="sm"
+                  className="mr-2 p-0"
+                  onClick={() => toggleViewModal(role)} // Cambia esta línea
+                >
+                  <FontAwesomeIcon icon={faEye} style={{ color: '#4a90e2', fontSize: '1.2rem' }} />
+                </Button>
+                </ButtonGroup>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+      <div className="d-flex justify-content-center mt-3">
+        <Pagination
+          count={totalPages}
+          page={currentPage}
+          onChange={(event, value) => setCurrentPage(value)}
+          renderItem={(item) => (
+            <PaginationItem component="a" {...item} />
+          )}
+        />
+      </div>
+      <Modal isOpen={modal} toggle={toggle}>
+        <ModalHeader toggle={toggle}>{selectedRole ? 'Editar Rol' : 'Agregar Rol'}</ModalHeader>
+        <ModalBody>
+          <Form>
+            <FormGroup>
+              <Label for="role">Rol</Label>
+              <Input type="text" name="role" value={form.role} onChange={handleChange} />
+            </FormGroup>
+            <FormGroup>
+              <Label for="description">Descripción</Label>
+              <Input type="text" name="description" value={form.description} onChange={handleChange} />
+            </FormGroup>
+            <FormGroup>
+              <Label>Permisos</Label>
+              <Table className="table table-bordered" style={{ borderRadius: '10px', overflow: 'hidden' }}>
+          <thead>
+            <tr>
+              <th>Módulo</th>
+              {permissions.map(permission => <th key={permission}>{permission}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {modules.map(module => (
+              <tr key={module}>
+                <td>{module}</td>
+                {permissions.map(permission => (
+                  <td key={permission}>
+                    <Input
+                      type="checkbox"
+                      checked={form.permissions[module][permission]}
+                      onChange={() => handlePermissionChange(module, permission)}
+                      style={{ borderColor: '#212529' }} // Borde más oscuro
+                      disabled={module === "Dashboard" && !["View"].includes(permission)} // Deshabilitar ciertas opciones para Dashboard
+                    />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+            </FormGroup>
+          </Form>
+        </ModalBody>
+        <ModalFooter>
+          <Button color="success" onClick={handleSubmit}>{selectedRole ? 'Actualizar' : 'Agregar'}</Button>
+          <Button color="danger" onClick={toggle}>Cancelar</Button>
+        </ModalFooter>
+      </Modal>
+      {/* Modal para ver el rol */}
+      <Modal isOpen={viewModal} toggle={closeViewModal}>
+  <ModalBody>
+    {selectedRole && permissions && modules && (
+      <Card className="rounded">
+        <CardBody>
+          <Form>
+            <FormGroup>
+              <Label for="role">Rol:</Label>
+              <Input
+                type="text"
+                id="role"
+                value={selectedRole.Rol || ''}
+                readOnly
+                className="rounded"
               />
-            </Col>
-
-            <Col md={6}>
-              <div style={{ marginBottom: '1rem' }}>
-                <Input
-                  type="text"
-                  value={selectedRole ? selectedRole.Rol : ""}
-                  readOnly
-                  placeholder="Nombre del rol"
-                  style={{ width: '100%', fontSize: '1rem', marginBottom: '1rem' }}
-                />
-              </div>
-              <div style={{ marginTop: '1rem' }}>
-              <Table className="table table-bordered" style={{ fontSize: '0.875rem' }}>
-                <thead>
-                  <tr>
-                    <th>Permiso/Privilegio</th>
-                    {permissions.map(permission => (
-                      <th key={permission}>{permission}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {modules.map(module => (
-                    <tr key={module}>
-                      <td>{module}</td>
-                      {permissions.map(permission => (
-                        <td key={permission}>
-                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                            <Input
-                              type="checkbox"
-                              disabled={module === "Dashboard" && permission !== "Visualizar"}
-                              checked={selectedRole ? selectedRole.Permisos[module][permission] : false}
-                              onChange={() => selectedRole && this.handlePermissionChange(module, permission)}
-                              style={{
-                                border: '2px solid #333',
-                                borderRadius: '0.25rem',
-                                width: '16px',
-                                height: '16px'
-                              }}
-                            />
-                          </div>
-                        </td>
-                      ))}
-                    </tr>
+            </FormGroup>
+            <FormGroup>
+              <Label for="description">Descripción:</Label>
+              <Input
+                type="text"
+                id="description"
+                value={selectedRole.Description || ''}
+                readOnly
+                className="rounded"
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label for="status">Estado:</Label>
+              <Input
+                type="text"
+                id="status"
+                value={selectedRole.Estado ? 'Activo' : 'Inactivo'}
+                readOnly
+                className="rounded"
+              />
+            </FormGroup>
+          </Form>
+          <hr />
+          <h5>Permisos:</h5>
+          <Table className="table table-bordered">
+            <thead>
+              <tr>
+                <th>Módulo</th>
+                {permissions.map(permission => (
+                  <th key={permission}>{permission}</th>
+                ))}
+              </tr> 
+            </thead>
+            <tbody>
+              {modules.map(module => (
+                <tr key={module}>
+                  <td>{module}</td>
+                  {permissions.map(permission => (
+                    <td key={permission}>
+                      <Input
+                        type="checkbox"
+                        checked={selectedRole.Permisos?.[module]?.[permission] || false}
+                        readOnly
+                        style={{ pointerEvents: 'none' }} // Deshabilitar eventos del mouse
+                      />
+                    </td>
                   ))}
-                </tbody>
-              </Table>
-              </div>
-              <div className="d-flex justify-content-between mt-3">
-              <Button color="danger" onClick={this.handleDiscardPermissions} size="sm"> No guardar cambios</Button>
-              <Button color="success" onClick={this.handleSavePermissions} size="sm">Guardar permisos</Button>
-              </div>
-            </Col>
-          </Row>
-
-          {/* Modal Insertar */}
-          <Modal isOpen={modalInsertar}>
-            <ModalHeader>Insertar Nuevo Rol</ModalHeader>
-            <ModalBody>
-              <FormGroup>
-                <Label for="Rol">Rol:</Label>
-                <Input type="text" name="Rol" id="Rol" onChange={this.handleChange} />
-              </FormGroup>
-              <FormGroup>
-                <Label for="Description">Descripción:</Label>
-                <Input type="text" name="Description" id="Description" onChange={this.handleChange} />
-              </FormGroup>
-            </ModalBody>
-            <ModalFooter>
-              <Button color="success" onClick={this.insertar}>Insertar</Button>
-              <Button color="danger" onClick={this.ocultarModalInsertar}>Cancelar</Button>
-            </ModalFooter>
-          </Modal>
-
-          {/* Modal Editar */}
-          <Modal isOpen={modalEditar}>
-            <ModalHeader>Editar Rol</ModalHeader>
-            <ModalBody>
-              <FormGroup>
-                <Label for="Rol">Rol:</Label>
-                <Input type="text" name="Rol" id="Rol" value={this.state.form.Rol} onChange={this.handleChange} />
-              </FormGroup>
-              <FormGroup>
-                <Label for="Description">Descripción:</Label>
-                <Input type="text" name="Description" id="Description" value={this.state.form.Description} onChange={this.handleChange} />
-              </FormGroup>
-            </ModalBody>
-            <ModalFooter>
-              <Button color="success" onClick={this.editar}>Editar</Button>
-              <Button color="danger" onClick={this.ocultarModalEditar}>Cancelar</Button>
-            </ModalFooter>
-          </Modal>
-        </Container>
-      </>
-    );
-  }
-}
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </CardBody>
+      </Card>
+    )}
+  </ModalBody>
+  <ModalFooter>
+    <Button color="danger" onClick={closeViewModal}>Cerrar</Button>
+  </ModalFooter>
+</Modal>
+    </div>
+  );
+};
 
 export default Roles;
