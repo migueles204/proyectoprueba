@@ -6,6 +6,7 @@ import { FaTrash, FaEdit } from 'react-icons/fa';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Swal from 'sweetalert2';
+import ListGroup from 'react-bootstrap/ListGroup';
 
 const categoryOfSpecimens = {
   "Caballos": ["Caballo 1", "Caballo 2", "Caballo 3"],
@@ -284,9 +285,19 @@ const HorseTrackingWithScheduler = () => {
     padding: '10px 10px', // Ajustar padding para igualar la altura
     lineHeight: '1.0'
   };
+  function DefaultExample() {}
 
   return (
 <div style={{padding: 16}}>
+<Row>
+<ListGroup className="mb-4">
+      <ListGroup.Item>Cras justo odio</ListGroup.Item>
+      <ListGroup.Item>Dapibus ac facilisis in</ListGroup.Item>
+      <ListGroup.Item>Morbi leo risus</ListGroup.Item>
+      <ListGroup.Item>Porta ac consectetur ac</ListGroup.Item>
+      <ListGroup.Item>Vestibulum at eros</ListGroup.Item>
+    </ListGroup>
+</Row>
 <Row className="mb-3">
         <Col sm="4" className="text-center">
           <button 
