@@ -12,7 +12,7 @@ const CategoryOfSpecimens = () => {
   const [categories, setCategories] = useState([]);
   const [exemplars, setExemplars] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [categoriesPerPage] = useState(2);
+  const categoriesPerPage = 2; 
   const [addCategoryModalOpen, setAddCategoryModalOpen] = useState(false);
   const [editCategoryModalOpen, setEditCategoryModalOpen] = useState(false);
   const [addExemplarModalOpen, setAddExemplarModalOpen] = useState(false);
@@ -29,11 +29,9 @@ const CategoryOfSpecimens = () => {
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
-  const filteredCategories = categories.filter(category => {
-    // Filtramos solo las categorías que tienen ejemplares coincidentes con el término de búsqueda
-    const matchExemplar = category.ejemplares.some(exemplar => exemplar.nombre.toLowerCase().includes(searchTerm.toLowerCase()));
-    return matchExemplar;
-  });  
+  const filteredCategories = categories.filter(category => category.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  category.ejemplares.some(exemplar => exemplar.nombre.toLowerCase().includes(searchTerm.toLowerCase()))
+); 
 
  // Cargar datos quemados solo una vez cuando el componente se monta
  useEffect(() => {
@@ -50,6 +48,12 @@ const CategoryOfSpecimens = () => {
       name: 'Potrancas',
       ejemplares: [
         { id: uuidv4(), nombre: 'Barbie', fechaNacimiento: '2021-12-05', paso: 'Trocha', color: 'Isabela', dueño: 'Miguel Ruiz', cedula: '10293847', correo: 'miguel@gmail.com', edad: calculateAgeInMonths('2021-12-05') }      ]
+    },
+    {
+      id: uuidv4(),
+      name: 'Yeguas',
+      ejemplares: [
+        { id: uuidv4(), nombre: 'San Juanera', fechaNacimiento: '2020-12-06', paso: 'Cabalgata', color: 'mora', dueño: 'Carlos Feo', cedula: '0987364356', correo: 'Carlos@gmail.com', edad: calculateAgeInMonths('2020-12-06') }      ]
     }
   ];
 
@@ -66,7 +70,7 @@ const CategoryOfSpecimens = () => {
     const startIndex = (currentPage - 1) * categoriesPerPage;
     const endIndex = startIndex + categoriesPerPage;
     return categories.slice(startIndex, endIndex);
-  };
+  };  
 
   const addCategory = () => {
     try {
@@ -403,10 +407,10 @@ const deleteCategory = (id) => {
     text: '¡No podrás revertir esto!',
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonColor: '#3085d6',
+    confirmButtonColor: '#1e7e34',
     cancelButtonColor: '#d33',
-    cancelButtonText: 'No, cancelar',
     confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'No, cancelar',
     reverseButtons: true,
     customClass: {
       cancelButton: 'custom-swal',
@@ -439,9 +443,9 @@ const deleteCategory = (id) => {
   });
 };
 
-  const paginate = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
+const handlePageChange = (event, page) => {
+  setCurrentPage(page);
+};
 
   const viewExemplar = (exemplar) => {
     setSelectedExemplar(exemplar);
@@ -537,12 +541,12 @@ const deleteCategory = (id) => {
 
   return (
     <div className="container mt-5">
-    <div className="d-flex justify-content-between mb-3">
+     <div className="d-flex justify-content-between mb-3">
       {/* Botón Crear Categoría */}
       <Button color="success" onClick={() => setAddCategoryModalOpen(true)}>
         Crear Categoría
       </Button>
-  
+
       {/* Campo de búsqueda */}
       <input
         type="text"
@@ -550,7 +554,7 @@ const deleteCategory = (id) => {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         className="form-control rounded"  // Bordes redondeados en las esquinas
-        style={{ maxWidth: '500px', width: '100%' }}  // Ancho ajustado
+        style={{ maxWidth: '600px', width: '100%' }}  // Ancho ajustado
       />
     </div>
     
@@ -585,21 +589,21 @@ const deleteCategory = (id) => {
       ) : null}
       
       <div className="row">
-        {getCategoriesOnPage().map((category) => (
-          <div key={category.id} className="col-md-6 mb-4">
-            <div className="card">
-              <div className="card-header d-flex justify-content-between">
-                <h3>{category.name}</h3>
-                <div>
+         {getCategoriesOnPage().map((category) => (
+        <div key={category.id} className="col-md-6 mb-4">
+          <div className="card">
+            <div className="card-header d-flex justify-content-between">
+              <h3>{category.name}</h3>
+              <div>
                 <Button
-                    color="success"
-                    style={{ marginLeft: '0.5rem' }}
-                    onClick={() => {
-                      setSelectedCategoryId(category.id);
-                      setAddExemplarModalOpen(true);
-                    }}
-                    id={`addExemplarButton-${category.id}`} // Identificador único para el tooltip
-                  >
+                  color="success"
+                  style={{ marginLeft: '0.5rem' }}
+                  onClick={() => {
+                    setSelectedCategoryId(category.id);
+                    setAddExemplarModalOpen(true);
+                  }}
+                  id={`addExemplarButton-${category.id}`} // Identificador único para el tooltip
+                >
                     <FontAwesomeIcon icon={faPlus} />
                   </Button>
                   <Tooltip
@@ -713,19 +717,12 @@ const deleteCategory = (id) => {
           marginBottom: '20px', // Margen inferior para separar del contenido
         }}
       >
-        <Pagination>
-          {[...Array(totalPages).keys()].map(number => (
-            <PaginationItem key={number + 1} active={number + 1 === currentPage}>
-              <PaginationLink
-                onClick={() => paginate(number + 1)}
-              >
-                {number + 1}
-              </PaginationLink>
-            </PaginationItem>
-          ))}
-        </Pagination>
-      </div>
-
+      <Pagination
+      count={totalPages}  // Total de páginas
+      page={currentPage}  // Página actual
+      onChange={handlePageChange}  // Manejador del cambio de página
+    />
+  </div>
       {/* Modals */}
       <Modal isOpen={addCategoryModalOpen} toggle={() => setAddCategoryModalOpen(!addCategoryModalOpen)}>
         <ModalHeader toggle={() => setAddCategoryModalOpen(!addCategoryModalOpen)}>
@@ -944,7 +941,7 @@ const deleteCategory = (id) => {
       </Modal>
 
       <Modal isOpen={viewExemplarModalOpen} toggle={() => setViewExemplarModalOpen(!viewExemplarModalOpen)}>
-        <ModalHeader toggle={() => setViewExemplarModalOpen(!viewExemplarModalOpen)}>
+        <ModalHeader >
           Ver Ejemplar
         </ModalHeader>
         <ModalBody>

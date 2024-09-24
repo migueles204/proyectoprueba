@@ -20,6 +20,7 @@ import Headquarters from '../components/modules/headquarters';
 import Tracking from '../components/modules/tracking';
 import Transfers from '../components/modules/transfers';
 import Records from '../components/modules/records';
+import Contracts from '../components/modules/contracts';
 import Logout from '../components/modules/logout';
 import Categoryofspecimens from '../components/modules/categoryofspecimens';
 import Specimens from '../components/modules/specimens';
@@ -46,7 +47,7 @@ export default class NavbarComp extends Component {
       text: "¡No podrás volver a recuperar la sesión!",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
+      confirmButtonColor: '#1e7e34',
       cancelButtonColor: '#d33',
       confirmButtonText: 'Sí, cerrar sesión',
       cancelButtonText: 'Cancelar'
@@ -85,10 +86,22 @@ export default class NavbarComp extends Component {
         <div>
           <Navbar style={navbarStyle} data-bs-theme={this.state.darkMode ? 'dark' : 'light'}>
             <Container>
-              <Navbar.Brand href="#home">
-                <GiTreeBeehive style={{ marginRight: '10px', color: '#FFD700', fontSize: '3.80rem' }} />
-                H-Honey
-              </Navbar.Brand>
+            <Navbar.Brand 
+              href="#home" 
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
+            >
+              <GiTreeBeehive style={{ color: '#F2C94C', fontSize: '3.80rem' }} />
+              <span 
+                style={{ 
+                  fontSize: '1.8rem', 
+                  marginTop: '0.1rem', // Reducción del margen superior
+                  fontFamily: '"Dancing Script", cursive', 
+                  color: this.state.darkMode ? '#F5F5F0' : '#000' 
+                }}
+              >
+                Honey
+              </span>
+            </Navbar.Brand>
               <Nav className="mx-auto">
                 <Nav.Link as={Link} to="/Profile" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Profile</Nav.Link>
                 <Nav.Link as={Link} to="/Dashboard" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Dashboard</Nav.Link>
@@ -101,7 +114,8 @@ export default class NavbarComp extends Component {
                 <Nav.Link as={Link} to="/Categoryofspecimens" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Specimens</Nav.Link>
                 <Nav.Link as={Link} to="/Tracking" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Tracking</Nav.Link>
                 <Nav.Link as={Link} to="/Transfers" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Transfers</Nav.Link>
-                <Nav.Link as={Link} to="/Records" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Pagos</Nav.Link>
+                <Nav.Link as={Link} to="/Records" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Payments</Nav.Link>
+                <Nav.Link as={Link} to="/Contracts" style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color}>Contracts</Nav.Link>
                 <Nav.Link style={navLinkStyle} onMouseOver={(e) => e.target.style.color = navLinkHoverStyle.color} onMouseOut={(e) => e.target.style.color = navLinkStyle.color} onClick={(e) => { e.preventDefault(); this.handleLogout(); }}>
                   Log out
                   <MdOutlineLogout style={{ marginRight: '8px', fontSize: '1.75rem' }} />
@@ -142,6 +156,7 @@ export default class NavbarComp extends Component {
             <Route path='/Tracking' element={<Tracking />} />
             <Route path='/Transfers' element={<Transfers />} />
             <Route path='/Records' element={<Records />} />
+            <Route path='/Contracts' element={<Contracts />} />
             <Route path='/Logout' element={<Logout />} />
           </Routes>
         </div>
