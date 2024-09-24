@@ -453,7 +453,7 @@ const Roles = () => {
                 {permissions.map(permission => (
                   <th key={permission}>{permission}</th>
                 ))}
-              </tr>
+              </tr> 
             </thead>
             <tbody>
               {modules.map(module => (

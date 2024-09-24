@@ -649,7 +649,7 @@ const handlePageChange = (event, page) => {
                     {category.ejemplares.map((exemplar) => (
                       <tr key={exemplar.id}>
                         <td>{exemplar.nombre}</td>
-                        <td>{exemplar.edad}</td>
+                        <td>{exemplar.edad}</td> 
                         <td>{exemplar.fechaNacimiento}</td>
                         <td>
                         <Button
