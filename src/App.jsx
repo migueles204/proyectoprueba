@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 import NavbarComp from './components/navegation';
 import miImagen from './assets/donjuan.jpg'; // Importa la imagen  
+import RecoveryForm from './components/modules/RecoveryForm'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

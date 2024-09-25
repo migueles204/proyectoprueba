@@ -60,14 +60,14 @@ const styles = {
   resetPasswordButton: {
     marginTop: '16px',
     padding: '10px',
-    backgroundColor: '#007bff',
+    backgroundColor: '#198754',
     color: 'white',
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
   },
   resetPasswordButtonHover: {
-    backgroundColor: '#0056b3',
+    backgroundColor: '#197754',
   },
 };
 

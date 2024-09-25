@@ -25,6 +25,8 @@ import Logout from '../components/modules/logout';
 import Categoryofspecimens from '../components/modules/categoryofspecimens';
 import Specimens from '../components/modules/specimens';
 import DetailsP from '../components/modules/DetailsP';
+import RecoveryFrom from '../components/modules/RecoveryForm';
+import RecoveryForm from '../components/modules/RecoveryForm';
 
 export default class NavbarComp extends Component {
   constructor(props) {
@@ -159,6 +161,7 @@ export default class NavbarComp extends Component {
             <Route path='/Transfers' element={<Transfers />} />
             <Route path='/Records' element={<Records />} />
             <Route path='/Contracts' element={<Contracts />} />
+            <Route path='/RecoveryForm' element={<RecoveryForm />} />
             <Route path='/Logout' element={<Logout />} />
           </Routes>
         </div>

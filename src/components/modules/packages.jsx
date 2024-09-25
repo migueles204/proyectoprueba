@@ -7,19 +7,51 @@ import Swal from 'sweetalert2';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import { useNavigate } from 'react-router-dom'; // Asegúrate de tener react-router-dom instalado
+import { Label } from 'reactstrap';
+import Select from 'react-select';
 
 const initialServices = [
-    { id: 1, nombre: "Especial", descripcion: "Alojamiento del ejemplar", valor: "50 USD", estado: false },
-    { id: 2, nombre: "Normal", descripcion: "Alimentación al ejemplar las veces son correspondidas", valor: "30 USD", estado: true },
-    { id: 3, nombre: "Premium", descripcion: "Cuidado médico al ejemplar las veces que así lo requiera", valor: "80 USD", estado: true }
+    {
+        id: 1,
+        nombre: "Especial",
+        descripcion: "Alojamiento del ejemplar",
+        valor: "50 USD",
+        estado: false,
+        serviciosAsociados: [
+            { id: 1, nombre: "Servicio 1" },
+            { id: 2, nombre: "Servicio 2" }
+        ]
+    },
+    {
+        id: 2,
+        nombre: "Normal",
+        descripcion: "Alimentación al ejemplar las veces son correspondidas",
+        valor: "30 USD",
+        estado: true,
+        serviciosAsociados: [
+            { id: 3, nombre: "Servicio 3" },
+            { id: 4, nombre: "Servicio 4" }
+        ]
+    },
+    {
+        id: 3,
+        nombre: "Premium",
+        descripcion: "Cuidado médico al ejemplar las veces que así lo requiera",
+        valor: "80 USD",
+        estado: true,
+        serviciosAsociados: [
+            { id: 5, nombre: "Servicio 5" },
+            { id: 6, nombre: "Servicio 6" }
+        ]
+    }
 ];
-const predefinedOptions = [
-    { id: 1, name: "Opción 1" },
-    { id: 2, name: "Opción 2" },
-    { id: 3, name: "Opción 3" },
-    { id: 4, name: "Opción 4" },
+const opcionesServicios = [
+    { id: 1, name: "Servicio de limpieza" },
+    { id: 2, name: "Servicio de alimentación" },
+    { id: 3, name: "Servicio de cuidado médico" },
+    { id: 4, name: "Servicio de entretenimiento" },
+    { id: 5, name: "Servicio de educación" }
 ];
-
 
 class Packages extends React.Component {
     state = {
@@ -71,16 +103,11 @@ class Packages extends React.Component {
         });
     };
 
-    handleSelectService = (id) => {
-        this.setState(prevState => {
-            const selectedServices = [...prevState.form.selectedServices];
-            if (selectedServices.includes(id)) {
-                return { form: { ...prevState.form, selectedServices: selectedServices.filter(serviceId => serviceId !== id) } };
-            } else {
-                return { form: { ...prevState.form, selectedServices: [...selectedServices, id] } };
-            }
-        });
+    handleSelectService = (selectedOptions) => {
+        const selectedServices = selectedOptions.map(option => option.value);
+        this.setState({ form: { ...this.state.form, selectedServices } });
     };
+
     handleSelectOption = (e) => {
         const value = e.target.value;
         this.setState(prevState => ({
@@ -99,6 +126,11 @@ class Packages extends React.Component {
                 customService: e.target.value
             }
         }));
+    };
+
+    eliminarServicioSeleccionado = (serviceId) => {
+        const selectedServices = this.state.form.selectedServices.filter(id => id !== serviceId);
+        this.setState({ form: { ...this.state.form, selectedServices } });
     };
 
     añadirServicio = () => {
@@ -128,7 +160,7 @@ class Packages extends React.Component {
                 return;
             }
 
-            const regex = /^[A-Za-z][A-Za-z0-9\s]*$/;
+            const regex = /^[A-Za-z][A-Za-z 0-9\s]*$/;
             if (!regex.test(nombre)) {
                 Swal.fire({
                     icon: "error",
@@ -280,7 +312,7 @@ class Packages extends React.Component {
             reverseButtons: true,
             customClass: {
                 cancelButton: 'custom-swal',
-                confirmButton: 'custom-swal'
+                confirmButton: 'custom -swal'
             },
             didOpen: (modal) => {
                 const icon = modal.querySelector('.swal2-icon.swal2-warning');
@@ -390,25 +422,25 @@ class Packages extends React.Component {
                             >
                                 <FontAwesomeIcon icon={faTrash} />
                             </Button>
-                        </div>
+                        </ div>
                     </div>
                     <Button
-    style={{
-      padding: '10px',
-      backgroundColor: 'black',
-      color: '#fff',
-      border: 'none',
-      borderRadius: '4px',
-      fontSize: '1rem',
-      cursor: 'pointer',
-      flex: '1',
-    }}
-    onMouseEnter={(e) => e.target.style.backgroundColor = '#e2b82c'}
-    onMouseLeave={(e) => e.target.style.backgroundColor = 'black'}
-    onClick={() => this.handleView(service.id)}
->
-    Ver
-</Button>
+                        style={{
+                            padding: '10px',
+                            backgroundColor: 'black',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '4px',
+                            fontSize: '1rem',
+                            cursor: 'pointer',
+                            flex: '1',
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#e2b82c'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'black'}
+                        onClick={() => this.handleView(service.id)}
+                    >
+                        Ver
+                    </Button>
                 </div>
             </div>
         ));
@@ -432,7 +464,7 @@ class Packages extends React.Component {
                         onChange={this.handleSearch}
                         style={{ width: '300px' }}
                     />
-                    <Button color="primary" onClick={this.mostrarModalAñadir}>Añadir Servicio</Button>
+                    <Button style={{ backgroundColor: '#198754' }} onClick={this.mostrarModalAñadir}>Añadir Servicio</Button>
                 </div>
                 <div className="d-flex flex-wrap justify-content-center">
                     {this.renderServices()}
@@ -473,7 +505,7 @@ class Packages extends React.Component {
                             </FormGroup>
                             <FormGroup>
                                 <Input
-                                    type="text"
+                                    type="number"
                                     name="valor"
                                     placeholder="Valor"
                                     value={this.state.form.valor}
@@ -481,42 +513,38 @@ class Packages extends React.Component {
                                 />
                             </FormGroup>
                             <FormGroup>
-                                <Input
-                                    type="select"
-                                    name="selectedOption"
-                                    value={this.state.form.selectedOption}
-                                    onChange={this.handleSelectOption}
-                                >
-                                    <option value="">Seleccione una opción</option>
-                                    {predefinedOptions.map(option => (
-                                        <option key={option.id} value={option.name}>{option.name}</option>
-                                    ))}
-                                    <option value="custom">Añadir opción personalizada</option>
-                                </Input>
+                            <Label>Seleccione servicios:</Label>
+    <Select
+        options={opcionesServicios.map(option => ({ value: option.id, label: option.name }))}
+        value={this.state.form.selectedServices.map(serviceId => ({ value: serviceId, label: opcionesServicios.find(option => option.id === serviceId).name }))}
+        onChange={this.handleSelectService}
+        isMulti
+    />
                             </FormGroup>
-                            {this.state.form.selectedOption === 'custom' && (
-                                <FormGroup>
-                                    <Input
-                                        type="text"
-                                        name="customService"
-                                        placeholder="Ingrese el nombre del servicio"
-                                        value={this.state.form.customService}
-                                        onChange={this.handleCustomServiceChange}
-                                    />
-                                </FormGroup>
-                            )}
                             <FormGroup>
-                                <Input
-                                    type="checkbox"
-                                    name="estado"
-                                    checked={this.state.form.estado}
-                                    onChange={this.handleChange}
-                                /> Activo
+                                <Label>Servicios seleccionados:</Label>
+                                <ul>
+                                    {this.state.form.selectedServices.map(serviceId => {
+                                        const service = this.state.allServices.find(s => s.id === serviceId);
+                                        return service ? (
+                                            <li key={service.id}>
+                                                {service.nombre}
+                                                <Button
+                                                    color="danger"
+                                                    onClick={() => this.eliminarServicioSeleccionado(serviceId)}
+                                                    style={{ fontSize: '0.75rem', marginLeft: '0.5rem' }}
+                                                >
+                                                    <FontAwesomeIcon icon={faTrash} />
+                                                </Button>
+                                            </li>
+                                        ) : null;
+                                    })}
+                                </ul>
                             </FormGroup>
                         </Form>
                     </ModalBody>
                     <ModalFooter>
-                        <Button color="primary" onClick={this.añadirServicio}>Añadir</Button>{' '}
+                        <Button color="primary" onClick={this.añadirServicio}>Añadir</Button>
                         <Button color="secondary" onClick={this.ocultarModalAñadir}>Cancelar</Button>
                     </ModalFooter>
                 </Modal>
@@ -546,20 +574,12 @@ class Packages extends React.Component {
                             </FormGroup>
                             <FormGroup>
                                 <Input
-                                    type="text"
+                                    type="number"
                                     name="valor"
                                     placeholder="Valor"
                                     value={this.state.form.valor}
                                     onChange={this.handleChange}
                                 />
-                            </FormGroup>
-                            <FormGroup>
-                                <Input
-                                    type="checkbox"
-                                    name="estado"
-                                    checked={this.state.form.estado}
-                                    onChange={this.handleChange}
-                                /> Activo
                             </FormGroup>
                         </Form>
                     </ModalBody>
